@@ -12,9 +12,12 @@
 # DO/ENDDO push and pop through it, which lets the decompiler treat loop
 # save/restore and return addresses as ordinary stack traffic.
 #
-# Arithmetic is modelled with scaling mode "no scaling" and the data limiter
-# expressed as the user-ops sat24/sat48.  Address register updates are
-# linear (Mn = $FFFFFF); see the AGU_MODULO define for modulo/bit-reverse.
+# The data ALU follows the SR mode bits: scaling (S1:S0) for the limiter,
+# rounding position and the E/U/S flags, the rounding mode RM, and the
+# arithmetic saturation mode SM.  The default language updates address
+# registers linearly (Mn = $FFFFFF); the modulo variant (AGU_MODULO) applies
+# the Mn modifier (linear, reverse carry, modulo, multiple wrap-around).
+# The 16-bit modes SA and SC are not modelled (see GHIDRA-RARE.md).
 
 define endian=little;
 define alignment=3;
@@ -68,9 +71,6 @@ define context contextreg
   ltop  = (8,31) noflow    # loop start address for lbot/lbot2
 ;
 
-define pcodeop sat24;      # data limiter: 56-bit accumulator -> 24-bit word
-define pcodeop sat48;      # data limiter: 56-bit accumulator -> 48-bit long word
-define pcodeop rnd56;      # convergent/two's complement rounding per SR.RM
 define pcodeop div_step;   # one iteration of DIV
 define pcodeop norm_step;  # NORM Rn,D
 define pcodeop normf;      # NORMF S,D
@@ -100,13 +100,82 @@ macro unpackSR(v) {
 	sr = v & 0xffff00;
 }
 
-# N, Z, E, U from a 56-bit result (no scaling)
+# SR mode bits (Family Manual Table 5-1): S1:S0 = 11:10, SC 13, DM 14, LF 15,
+# FV 16, SA 17, SM 20, RM 21.
+# Scaling: adj = +1 scale down (S1:S0 = 01), -1 scale up (10), 0 otherwise.
+macro scaleAdj(adj) {
+	local sm:3 = (sr >> 10) & 3;
+	adj = zext(sm == 1) - zext(sm == 2);
+}
+
+# N, Z, E, U from a 56-bit result; E and U follow the scaling mode
 macro nzeu(r) {
-	N = r s< 0;
+	local adj:1;
+	scaleAdj(adj);
+	local sv:8 = sext(r);
+	local hi:8 = sv s>> (47 + adj);
+	E = (hi != 0) && (hi != -1);
+	U = ((sv >> (47 + adj)) & 1) == ((sv >> (46 + adj)) & 1);
+	N = sv s< 0;
 	Z = r == 0;
-	local ext:7 = r s>> 47;
-	E = (ext != 0) && (ext != 0xffffffffffffff);
-	U = ((r >> 47) & 1) == ((r >> 46) & 1);
+}
+
+# Data shifter/limiter (section 3.1.6): an accumulator read onto one 24-bit
+# bus is scaled, then limited to $7FFFFF/$800000 if the integer portion is in
+# use; L latches the limiting, S is the scaling-bit equation of Table 5-1.
+macro sat24(acc, out) {
+	local adj:1;
+	scaleAdj(adj);
+	local sv:8 = sext(acc);
+	local hi:8 = sv s>> (47 + adj);
+	local ok:1 = (hi == 0) || (hi == -1);
+	local sh:8 = sv s>> (24 + adj);
+	local lim:3 = 0x7fffff + zext(sv s< 0);
+	out = (sh:3 * zext(ok)) + (lim * zext(!ok));
+	L = L || !ok;
+	S = S || (((sv >> (46 + adj)) & 1) != ((sv >> (45 + adj)) & 1));
+}
+
+# the same for a long-word (48-bit) read: $7FFFFF:FFFFFF / $800000:000000
+macro sat48(acc, out) {
+	local adj:1;
+	scaleAdj(adj);
+	local sv:8 = sext(acc);
+	local hi:8 = sv s>> (47 + adj);
+	local ok:1 = (hi == 0) || (hi == -1);
+	local sh:8 = (sv << 1) s>> (1 + adj);
+	local lim:6 = 0x7fffffffffff + zext(sv s< 0);
+	out = (sh:6 * zext(ok)) + (lim * zext(!ok));
+	L = L || !ok;
+	S = S || (((sv >> (46 + adj)) & 1) != ((sv >> (45 + adj)) & 1));
+}
+
+# Rounding (section 3.2.2) at bit 23 (+adj): convergent (RM = 0) or two's
+# complement (RM = 1); the bits below the rounding position are cleared.
+macro rnd56(v, out) {
+	local adj:1;
+	scaleAdj(adj);
+	local one:7 = 1;
+	local rc:7 = one << (23 + adj);
+	local low:7 = (rc << 1) - 1;
+	local t:7 = (v + rc) & ~low;
+	local conv:1 = (sr & 0x200000) == 0;
+	local half:1 = conv && ((v & low) == rc);
+	out = t & ~((rc << 1) * zext(half));
+}
+
+# Arithmetic saturation mode (SM, section 3.2.3, Table 3-1): a result whose
+# bits 55, 48 and 47 differ is replaced by $00:7FFFFF:FFFFFF or
+# $FF:800000:000000 (by bit 55), and V and L are set.
+macro smsat(r) {
+	local on:1 = (sr & 0x100000) != 0;
+	local b55:1 = ((r >> 55) & 1) != 0;
+	local b48:1 = ((r >> 48) & 1) != 0;
+	local b47:1 = ((r >> 47) & 1) != 0;
+	local bad:1 = on && ((b55 != b48) || (b55 != b47));
+	local lim:7 = 0x007fffffffffff + (zext(b55) * 0xff000000000001);
+	r = (r * zext(!bad)) + (lim * zext(bad));
+	V = V || bad;
 }
 
 # N, Z from bits 47..24 (logical operations on a1/b1)

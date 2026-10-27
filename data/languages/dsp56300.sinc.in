@@ -168,20 +168,70 @@ MulQ: "y1,x1" is k6_4=7 { local p:7 = sext(y1) * sext(x1); p = p << 1; export p;
 S56j: jj4 is jj4 { local t:7 = sext(jj4); t = t << 24; export t; }
 S48:  xy4 is xy4 { local t:7 = sext(xy4); export t; }
 
-macro add56(d, s) {
-	alu_r = d + s;
-	C = carry(d, s);
-	V = scarry(d, s);
+# Result flags of the arithmetic unit: SM saturation, L latches V, then E/U/N/Z.
+# finu: the instructions that SM never saturates (MPY/MAC su/uu, DMAC, ...).
+macro fin(r) {
+	smsat(r);
 	L = L || V;
-	nzeu(alu_r);
+	nzeu(r);
+}
+
+macro finu(r) {
+	L = L || V;
+	nzeu(r);
+}
+
+macro addv(d, s) {
+	alu_r = d + s;
+	V = scarry(d, s);
+}
+
+macro subv(d, s) {
+	alu_r = d - s;
+	V = sborrow(d, s);
+}
+
+# ADD/SUB-class: C from bit 55
+macro add56(d, s) {
+	C = carry(d, s);
+	addv(d, s);
+	fin(alu_r);
 }
 
 macro sub56(d, s) {
-	alu_r = d - s;
+	C = d < s;
+	subv(d, s);
+	fin(alu_r);
+}
+
+# CMP/CMPM: flags only, no saturation
+macro cmp56(d, s) {
 	C = d < s;
 	V = sborrow(d, s);
 	L = L || V;
-	nzeu(alu_r);
+	local cr:7 = d - s;
+	nzeu(cr);
+}
+
+# MAC-class: C unchanged
+macro mac56(d, s) {
+	addv(d, s);
+	fin(alu_r);
+}
+
+macro msub56(d, s) {
+	subv(d, s);
+	fin(alu_r);
+}
+
+macro macu56(d, s) {
+	addv(d, s);
+	finu(alu_r);
+}
+
+macro msubu56(d, s) {
+	subv(d, s);
+	finu(alu_r);
 }
 
 macro setd1(d, r) {
@@ -192,12 +242,12 @@ macro setd1(d, r) {
 @alu 00000000 @| move   @|                     @|                    @|
 @alu 0000d001 @| tfr    @| nacc3,acc3          @| nacc3 & acc3       @| alu_r = nacc3;
 @alu 0000d010 @| addr   @| nacc3,acc3          @| nacc3 & acc3       @| local h:7 = acc3 s>> 1; add56(h, nacc3);
-@alu 0000d011 @| tst    @| acc3                @| acc3               @| alu_r = acc3; nzeu(alu_r); V = 0;
-@alu 0000d101 @| cmp    @| nacc3,acc3          @| nacc3 & acc3       @| sub56(acc3, nacc3);
+@alu 0000d011 @| tst    @| acc3                @| acc3               @| local r:7 = acc3; nzeu(r); V = 0;
+@alu 0000d101 @| cmp    @| nacc3,acc3          @| nacc3 & acc3       @| cmp56(acc3, nacc3);
 @alu 0000d110 @| subr   @| nacc3,acc3          @| nacc3 & acc3       @| local h:7 = acc3 s>> 1; sub56(h, nacc3);
-@alu 0000d111 @| cmpm   @| nacc3,acc3          @| nacc3 & acc3       @| local d:7 = acc3; if (d s>= 0) goto <p1>; d = -d; <p1> local s:7 = nacc3; if (s s>= 0) goto <p2>; s = -s; <p2> sub56(d, s);
+@alu 0000d111 @| cmpm   @| nacc3,acc3          @| nacc3 & acc3       @| local d:7 = acc3; if (d s>= 0) goto <p1>; d = -d; <p1> local s:7 = nacc3; if (s s>= 0) goto <p2>; s = -s; <p2> cmp56(d, s);
 @alu 0001d000 @| add    @| nacc3,acc3          @| nacc3 & acc3       @| add56(acc3, nacc3);
-@alu 0001d001 @| rnd    @| acc3                @| acc3               @| alu_r = rnd56(acc3); nzeu(alu_r);
+@alu 0001d001 @| rnd    @| acc3                @| acc3               @| rnd56(acc3, alu_r); V = (acc3 s>= 0) && (alu_r s< 0); fin(alu_r);
 @alu 0001d010 @| addl   @| nacc3,acc3          @| nacc3 & acc3       @| local h:7 = acc3 << 1; add56(h, nacc3); V = V || ((acc3 s< 0) != (h s< 0));
 @alu 0001d011 @| clr    @| acc3                @| acc3               @| alu_r = 0; E = 0; U = 1; N = 0; Z = 1; V = 0;
 @alu 0001d100 @| sub    @| nacc3,acc3          @| nacc3 & acc3       @| sub56(acc3, nacc3);
@@ -211,28 +261,28 @@ macro setd1(d, r) {
 @alu 001Jd101 @| sbc    @| S48,acc3            @| S48 & acc3         @| local s:7 = S48 + zext(C); sub56(acc3, s);
 @alu 0010d010 @| asr    @| acc3                @| acc3               @| C = (acc3 & 1) != 0; alu_r = acc3 s>> 1; V = 0; nzeu(alu_r);
 @alu 0010d011 @| lsr    @| acc3                @| acc3               @| local r:3 = acc3[24,24]; C = (r & 1) != 0; r = r >> 1; setd1(acc3, r); nz24(r);
-@alu 0010d110 @| abs    @| acc3                @| acc3               @| alu_r = acc3; if (alu_r s>= 0) goto <p>; alu_r = -alu_r; <p> V = alu_r s< 0; L = L || V; nzeu(alu_r);
+@alu 0010d110 @| abs    @| acc3                @| acc3               @| alu_r = acc3; if (alu_r s>= 0) goto <p>; alu_r = -alu_r; <p> V = alu_r s< 0; fin(alu_r);
 @alu 0010d111 @| ror    @| acc3                @| acc3               @| local r:3 = acc3[24,24]; local c:1 = (r & 1) != 0; r = (r >> 1) | (zext(C) << 23); C = c; setd1(acc3, r); nz24(r);
-@alu 0011d010 @| asl    @| acc3                @| acc3               @| C = acc3 s< 0; alu_r = acc3 << 1; V = (acc3 s< 0) != (alu_r s< 0); L = L || V; nzeu(alu_r);
+@alu 0011d010 @| asl    @| acc3                @| acc3               @| C = acc3 s< 0; alu_r = acc3 << 1; V = (acc3 s< 0) != (alu_r s< 0); fin(alu_r);
 @alu 0011d011 @| lsl    @| acc3                @| acc3               @| local r:3 = acc3[24,24]; C = (r & 0x800000) != 0; r = r << 1; setd1(acc3, r); nz24(r);
-@alu 0011d110 @| neg    @| acc3                @| acc3               @| alu_r = -acc3; V = sborrow(0:7, acc3); L = L || V; nzeu(alu_r);
+@alu 0011d110 @| neg    @| acc3                @| acc3               @| alu_r = -acc3; V = sborrow(0:7, acc3); fin(alu_r);
 @alu 0011d111 @| rol    @| acc3                @| acc3               @| local r:3 = acc3[24,24]; local c:1 = (r & 0x800000) != 0; r = (r << 1) | zext(C); C = c; setd1(acc3, r); nz24(r);
 @alu 01JJd000 @| add    @| S56j,acc3           @| S56j & acc3        @| add56(acc3, S56j);
 @alu 01JJd001 @| tfr    @| jj4,acc3            @| jj4 & S56j & acc3  @| alu_r = S56j;
 @alu 01JJd010 @| or     @| jj4,acc3            @| jj4 & acc3         @| local r:3 = acc3[24,24] | jj4; setd1(acc3, r); nz24(r);
 @alu 01JJd011 @| eor    @| jj4,acc3            @| jj4 & acc3         @| local r:3 = acc3[24,24] ^ jj4; setd1(acc3, r); nz24(r);
 @alu 01JJd100 @| sub    @| S56j,acc3           @| S56j & acc3        @| sub56(acc3, S56j);
-@alu 01JJd101 @| cmp    @| S56j,acc3           @| S56j & acc3        @| sub56(acc3, S56j);
+@alu 01JJd101 @| cmp    @| S56j,acc3           @| S56j & acc3        @| cmp56(acc3, S56j);
 @alu 01JJd110 @| and    @| jj4,acc3            @| jj4 & acc3         @| local r:3 = acc3[24,24] & jj4; setd1(acc3, r); nz24(r);
-@alu 01JJd111 @| cmpm   @| S56j,acc3           @| S56j & acc3        @| local d:7 = acc3; if (d s>= 0) goto <p1>; d = -d; <p1> local s:7 = S56j; if (s s>= 0) goto <p2>; s = -s; <p2> sub56(d, s);
-@alu 1QQQd000 @| mpy    @| MulQ,acc3           @| MulQ & acc3        @| alu_r = MulQ; V = 0; nzeu(alu_r);
-@alu 1QQQd100 @| mpy    @| "-"^MulQ,acc3       @| MulQ & acc3        @| alu_r = -MulQ; V = 0; nzeu(alu_r);
-@alu 1QQQd001 @| mpyr   @| MulQ,acc3           @| MulQ & acc3        @| alu_r = rnd56(MulQ); V = 0; nzeu(alu_r);
-@alu 1QQQd101 @| mpyr   @| "-"^MulQ,acc3       @| MulQ & acc3        @| local p:7 = -MulQ; alu_r = rnd56(p); V = 0; nzeu(alu_r);
-@alu 1QQQd010 @| mac    @| MulQ,acc3           @| MulQ & acc3        @| add56(acc3, MulQ);
-@alu 1QQQd110 @| mac    @| "-"^MulQ,acc3       @| MulQ & acc3        @| sub56(acc3, MulQ);
-@alu 1QQQd011 @| macr   @| MulQ,acc3           @| MulQ & acc3        @| add56(acc3, MulQ); alu_r = rnd56(alu_r); nzeu(alu_r);
-@alu 1QQQd111 @| macr   @| "-"^MulQ,acc3       @| MulQ & acc3        @| sub56(acc3, MulQ); alu_r = rnd56(alu_r); nzeu(alu_r);
+@alu 01JJd111 @| cmpm   @| S56j,acc3           @| S56j & acc3        @| local d:7 = acc3; if (d s>= 0) goto <p1>; d = -d; <p1> local s:7 = S56j; if (s s>= 0) goto <p2>; s = -s; <p2> cmp56(d, s);
+@alu 1QQQd000 @| mpy    @| MulQ,acc3           @| MulQ & acc3        @| alu_r = MulQ; V = 0; fin(alu_r);
+@alu 1QQQd100 @| mpy    @| "-"^MulQ,acc3       @| MulQ & acc3        @| alu_r = -MulQ; V = 0; fin(alu_r);
+@alu 1QQQd001 @| mpyr   @| MulQ,acc3           @| MulQ & acc3        @| local p:7 = MulQ; rnd56(p, alu_r); V = 0; fin(alu_r);
+@alu 1QQQd101 @| mpyr   @| "-"^MulQ,acc3       @| MulQ & acc3        @| local p:7 = -MulQ; rnd56(p, alu_r); V = 0; fin(alu_r);
+@alu 1QQQd010 @| mac    @| MulQ,acc3           @| MulQ & acc3        @| mac56(acc3, MulQ);
+@alu 1QQQd110 @| mac    @| "-"^MulQ,acc3       @| MulQ & acc3        @| msub56(acc3, MulQ);
+@alu 1QQQd011 @| macr   @| MulQ,acc3           @| MulQ & acc3        @| addv(acc3, MulQ); local q:7; rnd56(alu_r, q); V = V || ((alu_r s>= 0) && (q s< 0)); alu_r = q; fin(alu_r);
+@alu 1QQQd111 @| macr   @| "-"^MulQ,acc3       @| MulQ & acc3        @| subv(acc3, MulQ); local q:7; rnd56(alu_r, q); V = V || ((alu_r s>= 0) && (q s< 0)); alu_r = q; fin(alu_r);
 
 # Write-back of the ALU result (after the parallel move has read its sources)
 ALUW: is acc3 { acc3 = alu_r; }
@@ -272,6 +322,12 @@ PM: R5rS^",x:<"^k13_8    is {01??0???00??????????????} & k13_8 & R5rS { mv1 = R5
 PM: "y:<"^k13_8^","^R5wS is {01??1???10??????????????} & k13_8 & R5wS { mv1 = *[Y]:3 k13_8:3; build R5wS; }
 PM: R5rS^",y:<"^k13_8    is {01??1???00??????????????} & k13_8 & R5rS { mv1 = R5rS; *[Y]:3 k13_8:3 = mv1; }
 
+# limited 24-bit reads of A and B (one data shifter/limiter each)
+LimXA: is epsilon { local v:3; sat24(a, v); export v; }
+LimXB: is epsilon { local v:3; sat24(b, v); export v; }
+LimYA: is epsilon { local v:3; sat24(a, v); export v; }
+LimYB: is epsilon { local v:3; sat24(b, v); export v; }
+
 # L: long (X:Y pair) moves.  LLL = bit 19, bits 17..16.  Bit 19 is spelled out
 # in each PM pattern so these outrank the X/Y forms (whose register code would
 # be invalid here); SLEIGH does not consult subtable patterns when choosing.
@@ -279,10 +335,10 @@ LSr: "a10" is k19_19=0 & k17_16=0 { local v:6 = a10; export v; }
 LSr: "b10" is k19_19=0 & k17_16=1 { local v:6 = b10; export v; }
 LSr: "x"   is k19_19=0 & k17_16=2 { export x; }
 LSr: "y"   is k19_19=0 & k17_16=3 { export y; }
-LSr: "a"   is k19_19=1 & k17_16=0 { local v:6 = sat48(a); export v; }
-LSr: "b"   is k19_19=1 & k17_16=1 { local v:6 = sat48(b); export v; }
-LSr: "ab"  is k19_19=1 & k17_16=2 { local h:3 = sat24(a); local l:3 = sat24(b); local v:6 = (zext(h) << 24) | zext(l); export v; }
-LSr: "ba"  is k19_19=1 & k17_16=3 { local h:3 = sat24(b); local l:3 = sat24(a); local v:6 = (zext(h) << 24) | zext(l); export v; }
+LSr: "a"   is k19_19=1 & k17_16=0 { local v:6; sat48(a, v); export v; }
+LSr: "b"   is k19_19=1 & k17_16=1 { local v:6; sat48(b, v); export v; }
+LSr: "ab"  is k19_19=1 & k17_16=2 & LimXA & LimYB { local v:6 = (zext(LimXA) << 24) | zext(LimYB); export v; }
+LSr: "ba"  is k19_19=1 & k17_16=3 & LimXB & LimYA { local v:6 = (zext(LimXB) << 24) | zext(LimYA); export v; }
 LDw: "a10" is k19_19=0 & k17_16=0 { a10 = zext(mv1) << 24 | zext(mv2); }
 LDw: "b10" is k19_19=0 & k17_16=1 { b10 = zext(mv1) << 24 | zext(mv2); }
 LDw: "x"   is k19_19=0 & k17_16=2 { x1 = mv1; x0 = mv2; }
@@ -304,16 +360,16 @@ PM: LSr^",l:<"^k13_8     is {01001 0??00??????????????} & k13_8 & LSr { local v:
 # Single register views used by the X:R, R:Y and X:Y forms
 XR2r: "x0" is k19_18=0 { export x0; }
 XR2r: "x1" is k19_18=1 { export x1; }
-XR2r: "a"  is k19_18=2 { local v:3 = sat24(a); export v; }
-XR2r: "b"  is k19_18=3 { local v:3 = sat24(b); export v; }
+XR2r: "a"  is k19_18=2 & LimXA { export LimXA; }
+XR2r: "b"  is k19_18=3 & LimXB { export LimXB; }
 XR2w: "x0" is k19_18=0 { x0 = mv1; }
 XR2w: "x1" is k19_18=1 { x1 = mv1; }
 XR2w: "a"  is k19_18=2 { fr56(a, mv1); }
 XR2w: "b"  is k19_18=3 { fr56(b, mv1); }
 YR2r: "y0" is k17_16=0 { export y0; }
 YR2r: "y1" is k17_16=1 { export y1; }
-YR2r: "a"  is k17_16=2 { local v:3 = sat24(a); export v; }
-YR2r: "b"  is k17_16=3 { local v:3 = sat24(b); export v; }
+YR2r: "a"  is k17_16=2 & LimYA { export LimYA; }
+YR2r: "b"  is k17_16=3 & LimYB { export LimYB; }
 YR2w: "y0" is k17_16=0 { y0 = mv2; }
 YR2w: "y1" is k17_16=1 { y1 = mv2; }
 YR2w: "a"  is k17_16=2 { fr56(a, mv2); }
@@ -325,24 +381,24 @@ X1w18: "x1" is k18_18=1 { x1 = mv1; }
 
 # X:R  -- X memory move plus accumulator (bit 17) to y0/y1 (bit 16)
 PM: "x:"^EA^","^XR2w^" "^acc17^","^Y1w16 is ({0001????10??????????????} & XR2w & acc17 & Y1w16) ... & EA
-	{ mv1 = *[X]:3 EA; mv2 = sat24(acc17); build XR2w; build Y1w16; }
+	{ mv1 = *[X]:3 EA; sat24(acc17, mv2); build XR2w; build Y1w16; }
 PM: XR2r^",x:"^EA^" "^acc17^","^Y1w16    is ({0001????00??????????????} & XR2r & acc17 & Y1w16) ... & EA
-	{ mv1 = XR2r; mv2 = sat24(acc17); *[X]:3 EA = mv1; build Y1w16; }
+	{ mv1 = XR2r; sat24(acc17, mv2); *[X]:3 EA = mv1; build Y1w16; }
 PM: IMM^","^XR2w^" "^acc17^","^Y1w16     is ({0001????10??????????????} & XR2w & acc17 & Y1w16) ... & IMM
-	{ mv1 = IMM; mv2 = sat24(acc17); build XR2w; build Y1w16; }
+	{ mv1 = IMM; sat24(acc17, mv2); build XR2w; build Y1w16; }
 # R:Y  -- accumulator (bit 19) to x0/x1 (bit 18) plus Y memory move
 PM: acc19^","^X1w18^" y:"^EA^","^YR2w is ({0001????11??????????????} & acc19 & X1w18 & YR2w) ... & EA
-	{ mv1 = sat24(acc19); mv2 = *[Y]:3 EA; build X1w18; build YR2w; }
+	{ sat24(acc19, mv1); mv2 = *[Y]:3 EA; build X1w18; build YR2w; }
 PM: acc19^","^X1w18^" "^YR2r^",y:"^EA is ({0001????01??????????????} & acc19 & X1w18 & YR2r) ... & EA
-	{ mv1 = sat24(acc19); mv2 = YR2r; *[Y]:3 EA = mv2; build X1w18; }
+	{ sat24(acc19, mv1); mv2 = YR2r; *[Y]:3 EA = mv2; build X1w18; }
 PM: acc19^","^X1w18^" "^IMM^","^YR2w  is ({0001????11??????????????} & acc19 & X1w18 & YR2w) ... & IMM
-	{ mv1 = sat24(acc19); mv2 = IMM; build X1w18; build YR2w; }
+	{ sat24(acc19, mv1); mv2 = IMM; build X1w18; build YR2w; }
 
 # Class II:  A -> X:ea, X0 -> A   /   Y0 -> A, A -> Y:ea
 PM: acc16^",x:"^EA^" x0,"^acc16b is ({0000100?00??????????????} & acc16 & acc16b) ... & EA
-	{ mv1 = sat24(acc16); *[X]:3 EA = mv1; fr56(acc16, x0); }
+	{ sat24(acc16, mv1); *[X]:3 EA = mv1; fr56(acc16, x0); }
 PM: "y0,"^acc16^" "^acc16b^",y:"^EA is ({0000100?10??????????????} & acc16 & acc16b) ... & EA
-	{ mv1 = sat24(acc16); *[Y]:3 EA = mv1; fr56(acc16, y0); }
+	{ sat24(acc16, mv1); *[Y]:3 EA = mv1; fr56(acc16, y0); }
 
 # X:Y dual moves.  W (bit 15) = X direction, w (bit 22) = Y direction
 PM: "x:"^XEA^","^XR2w^" y:"^YEA^","^YR2w is {11??????1???????????????} & XEA & XR2w & YEA & YR2w

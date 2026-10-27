@@ -203,8 +203,8 @@ R5r13: "a2" is k17_13=0xa { local v:3 = sext(a2); export v; }
 R5r13: "b2" is k17_13=0xb { local v:3 = sext(b2); export v; }
 R5r13: "a1" is k17_13=0xc { export a1; }
 R5r13: "b1" is k17_13=0xd { export b1; }
-R5r13: "a" is k17_13=0xe { local v:3 = sat24(a); export v; }
-R5r13: "b" is k17_13=0xf { local v:3 = sat24(b); export v; }
+R5r13: "a" is k17_13=0xe { local v:3; sat24(a, v); export v; }
+R5r13: "b" is k17_13=0xf { local v:3; sat24(b, v); export v; }
 R5r13: "r0" is k17_13=0x10 { export r0; }
 R5r13: "n0" is k17_13=0x18 { export n0; }
 R5r13: "r1" is k17_13=0x11 { export r1; }
@@ -287,8 +287,8 @@ R5rS: "a2" is k21_20=0x1 & k18_16=0x2 { local v:3 = sext(a2); export v; }
 R5rS: "b2" is k21_20=0x1 & k18_16=0x3 { local v:3 = sext(b2); export v; }
 R5rS: "a1" is k21_20=0x1 & k18_16=0x4 { export a1; }
 R5rS: "b1" is k21_20=0x1 & k18_16=0x5 { export b1; }
-R5rS: "a" is k21_20=0x1 & k18_16=0x6 { local v:3 = sat24(a); export v; }
-R5rS: "b" is k21_20=0x1 & k18_16=0x7 { local v:3 = sat24(b); export v; }
+R5rS: "a" is k21_20=0x1 & k18_16=0x6 { local v:3; sat24(a, v); export v; }
+R5rS: "b" is k21_20=0x1 & k18_16=0x7 { local v:3; sat24(b, v); export v; }
 R5rS: "r0" is k21_20=0x2 & k18_16=0x0 { export r0; }
 R5rS: "n0" is k21_20=0x3 & k18_16=0x0 { export n0; }
 R5rS: "r1" is k21_20=0x2 & k18_16=0x1 { export r1; }
@@ -343,8 +343,8 @@ R6r8: "a2" is k13_8=0xa { local v:3 = sext(a2); export v; }
 R6r8: "b2" is k13_8=0xb { local v:3 = sext(b2); export v; }
 R6r8: "a1" is k13_8=0xc { export a1; }
 R6r8: "b1" is k13_8=0xd { export b1; }
-R6r8: "a" is k13_8=0xe { local v:3 = sat24(a); export v; }
-R6r8: "b" is k13_8=0xf { local v:3 = sat24(b); export v; }
+R6r8: "a" is k13_8=0xe { local v:3; sat24(a, v); export v; }
+R6r8: "b" is k13_8=0xf { local v:3; sat24(b, v); export v; }
 R6r8: "r0" is k13_8=0x10 { export r0; }
 R6r8: "r1" is k13_8=0x11 { export r1; }
 R6r8: "r2" is k13_8=0x12 { export r2; }
@@ -437,8 +437,8 @@ R6r0: "a2" is k5_0=0xa { local v:3 = sext(a2); export v; }
 R6r0: "b2" is k5_0=0xb { local v:3 = sext(b2); export v; }
 R6r0: "a1" is k5_0=0xc { export a1; }
 R6r0: "b1" is k5_0=0xd { export b1; }
-R6r0: "a" is k5_0=0xe { local v:3 = sat24(a); export v; }
-R6r0: "b" is k5_0=0xf { local v:3 = sat24(b); export v; }
+R6r0: "a" is k5_0=0xe { local v:3; sat24(a, v); export v; }
+R6r0: "b" is k5_0=0xf { local v:3; sat24(b, v); export v; }
 R6r0: "r0" is k5_0=0x10 { export r0; }
 R6r0: "r1" is k5_0=0x11 { export r1; }
 R6r0: "r2" is k5_0=0x12 { export r2; }
@@ -531,8 +531,8 @@ R6nos: "a2" is k13_8=0xa { local v:3 = sext(a2); export v; }
 R6nos: "b2" is k13_8=0xb { local v:3 = sext(b2); export v; }
 R6nos: "a1" is k13_8=0xc { export a1; }
 R6nos: "b1" is k13_8=0xd { export b1; }
-R6nos: "a" is k13_8=0xe { local v:3 = sat24(a); export v; }
-R6nos: "b" is k13_8=0xf { local v:3 = sat24(b); export v; }
+R6nos: "a" is k13_8=0xe { local v:3; sat24(a, v); export v; }
+R6nos: "b" is k13_8=0xf { local v:3; sat24(b, v); export v; }
 R6nos: "r0" is k13_8=0x10 { export r0; }
 R6nos: "r1" is k13_8=0x11 { export r1; }
 R6nos: "r2" is k13_8=0x12 { export r2; }
@@ -615,8 +615,8 @@ D4r0: "a2" is k3_0=0xa { local v:3 = sext(a2); export v; }
 D4r0: "b2" is k3_0=0xb { local v:3 = sext(b2); export v; }
 D4r0: "a1" is k3_0=0xc { export a1; }
 D4r0: "b1" is k3_0=0xd { export b1; }
-D4r0: "a" is k3_0=0xe { local v:3 = sat24(a); export v; }
-D4r0: "b" is k3_0=0xf { local v:3 = sat24(b); export v; }
+D4r0: "a" is k3_0=0xe { local v:3; sat24(a, v); export v; }
+D4r0: "b" is k3_0=0xf { local v:3; sat24(b, v); export v; }
 D4w0: "x0" is k3_0=0x4 { x0 = mv1; }
 D4w0: "x1" is k3_0=0x5 { x1 = mv1; }
 D4w0: "y0" is k3_0=0x6 { y0 = mv1; }
@@ -728,20 +728,70 @@ MulQ: "y1,x1" is k6_4=7 { local p:7 = sext(y1) * sext(x1); p = p << 1; export p;
 S56j: jj4 is jj4 { local t:7 = sext(jj4); t = t << 24; export t; }
 S48:  xy4 is xy4 { local t:7 = sext(xy4); export t; }
 
-macro add56(d, s) {
-	alu_r = d + s;
-	C = carry(d, s);
-	V = scarry(d, s);
+# Result flags of the arithmetic unit: SM saturation, L latches V, then E/U/N/Z.
+# finu: the instructions that SM never saturates (MPY/MAC su/uu, DMAC, ...).
+macro fin(r) {
+	smsat(r);
 	L = L || V;
-	nzeu(alu_r);
+	nzeu(r);
+}
+
+macro finu(r) {
+	L = L || V;
+	nzeu(r);
+}
+
+macro addv(d, s) {
+	alu_r = d + s;
+	V = scarry(d, s);
+}
+
+macro subv(d, s) {
+	alu_r = d - s;
+	V = sborrow(d, s);
+}
+
+# ADD/SUB-class: C from bit 55
+macro add56(d, s) {
+	C = carry(d, s);
+	addv(d, s);
+	fin(alu_r);
 }
 
 macro sub56(d, s) {
-	alu_r = d - s;
+	C = d < s;
+	subv(d, s);
+	fin(alu_r);
+}
+
+# CMP/CMPM: flags only, no saturation
+macro cmp56(d, s) {
 	C = d < s;
 	V = sborrow(d, s);
 	L = L || V;
-	nzeu(alu_r);
+	local cr:7 = d - s;
+	nzeu(cr);
+}
+
+# MAC-class: C unchanged
+macro mac56(d, s) {
+	addv(d, s);
+	fin(alu_r);
+}
+
+macro msub56(d, s) {
+	subv(d, s);
+	fin(alu_r);
+}
+
+macro macu56(d, s) {
+	addv(d, s);
+	finu(alu_r);
+}
+
+macro msubu56(d, s) {
+	subv(d, s);
+	finu(alu_r);
 }
 
 macro setd1(d, r) {
@@ -756,17 +806,17 @@ ALU: nacc3,acc3 is k7_4=0x0 & k2_0=0x1 & nacc3 & acc3 { alu_r = nacc3; }
 ALUm: "addr" is k7_4=0x0 & k2_0=0x2 { }
 ALU: nacc3,acc3 is k7_4=0x0 & k2_0=0x2 & nacc3 & acc3 { local h:7 = acc3 s>> 1; add56(h, nacc3); }
 ALUm: "tst" is k7_4=0x0 & k2_0=0x3 { }
-ALU: acc3 is k7_4=0x0 & k2_0=0x3 & acc3 { alu_r = acc3; nzeu(alu_r); V = 0; }
+ALU: acc3 is k7_4=0x0 & k2_0=0x3 & acc3 { local r:7 = acc3; nzeu(r); V = 0; }
 ALUm: "cmp" is k7_4=0x0 & k2_0=0x5 { }
-ALU: nacc3,acc3 is k7_4=0x0 & k2_0=0x5 & nacc3 & acc3 { sub56(acc3, nacc3); }
+ALU: nacc3,acc3 is k7_4=0x0 & k2_0=0x5 & nacc3 & acc3 { cmp56(acc3, nacc3); }
 ALUm: "subr" is k7_4=0x0 & k2_0=0x6 { }
 ALU: nacc3,acc3 is k7_4=0x0 & k2_0=0x6 & nacc3 & acc3 { local h:7 = acc3 s>> 1; sub56(h, nacc3); }
 ALUm: "cmpm" is k7_4=0x0 & k2_0=0x7 { }
-ALU: nacc3,acc3 is k7_4=0x0 & k2_0=0x7 & nacc3 & acc3 { local d:7 = acc3; if (d s>= 0) goto <p1>; d = -d; <p1> local s:7 = nacc3; if (s s>= 0) goto <p2>; s = -s; <p2> sub56(d, s); }
+ALU: nacc3,acc3 is k7_4=0x0 & k2_0=0x7 & nacc3 & acc3 { local d:7 = acc3; if (d s>= 0) goto <p1>; d = -d; <p1> local s:7 = nacc3; if (s s>= 0) goto <p2>; s = -s; <p2> cmp56(d, s); }
 ALUm: "add" is k7_4=0x1 & k2_0=0x0 { }
 ALU: nacc3,acc3 is k7_4=0x1 & k2_0=0x0 & nacc3 & acc3 { add56(acc3, nacc3); }
 ALUm: "rnd" is k7_4=0x1 & k2_0=0x1 { }
-ALU: acc3 is k7_4=0x1 & k2_0=0x1 & acc3 { alu_r = rnd56(acc3); nzeu(alu_r); }
+ALU: acc3 is k7_4=0x1 & k2_0=0x1 & acc3 { rnd56(acc3, alu_r); V = (acc3 s>= 0) && (alu_r s< 0); fin(alu_r); }
 ALUm: "addl" is k7_4=0x1 & k2_0=0x2 { }
 ALU: nacc3,acc3 is k7_4=0x1 & k2_0=0x2 & nacc3 & acc3 { local h:7 = acc3 << 1; add56(h, nacc3); V = V || ((acc3 s< 0) != (h s< 0)); }
 ALUm: "clr" is k7_4=0x1 & k2_0=0x3 { }
@@ -794,15 +844,15 @@ ALU: acc3 is k7_4=0x2 & k2_0=0x2 & acc3 { C = (acc3 & 1) != 0; alu_r = acc3 s>> 
 ALUm: "lsr" is k7_4=0x2 & k2_0=0x3 { }
 ALU: acc3 is k7_4=0x2 & k2_0=0x3 & acc3 { local r:3 = acc3[24,24]; C = (r & 1) != 0; r = r >> 1; setd1(acc3, r); nz24(r); }
 ALUm: "abs" is k7_4=0x2 & k2_0=0x6 { }
-ALU: acc3 is k7_4=0x2 & k2_0=0x6 & acc3 { alu_r = acc3; if (alu_r s>= 0) goto <p>; alu_r = -alu_r; <p> V = alu_r s< 0; L = L || V; nzeu(alu_r); }
+ALU: acc3 is k7_4=0x2 & k2_0=0x6 & acc3 { alu_r = acc3; if (alu_r s>= 0) goto <p>; alu_r = -alu_r; <p> V = alu_r s< 0; fin(alu_r); }
 ALUm: "ror" is k7_4=0x2 & k2_0=0x7 { }
 ALU: acc3 is k7_4=0x2 & k2_0=0x7 & acc3 { local r:3 = acc3[24,24]; local c:1 = (r & 1) != 0; r = (r >> 1) | (zext(C) << 23); C = c; setd1(acc3, r); nz24(r); }
 ALUm: "asl" is k7_4=0x3 & k2_0=0x2 { }
-ALU: acc3 is k7_4=0x3 & k2_0=0x2 & acc3 { C = acc3 s< 0; alu_r = acc3 << 1; V = (acc3 s< 0) != (alu_r s< 0); L = L || V; nzeu(alu_r); }
+ALU: acc3 is k7_4=0x3 & k2_0=0x2 & acc3 { C = acc3 s< 0; alu_r = acc3 << 1; V = (acc3 s< 0) != (alu_r s< 0); fin(alu_r); }
 ALUm: "lsl" is k7_4=0x3 & k2_0=0x3 { }
 ALU: acc3 is k7_4=0x3 & k2_0=0x3 & acc3 { local r:3 = acc3[24,24]; C = (r & 0x800000) != 0; r = r << 1; setd1(acc3, r); nz24(r); }
 ALUm: "neg" is k7_4=0x3 & k2_0=0x6 { }
-ALU: acc3 is k7_4=0x3 & k2_0=0x6 & acc3 { alu_r = -acc3; V = sborrow(0:7, acc3); L = L || V; nzeu(alu_r); }
+ALU: acc3 is k7_4=0x3 & k2_0=0x6 & acc3 { alu_r = -acc3; V = sborrow(0:7, acc3); fin(alu_r); }
 ALUm: "rol" is k7_4=0x3 & k2_0=0x7 { }
 ALU: acc3 is k7_4=0x3 & k2_0=0x7 & acc3 { local r:3 = acc3[24,24]; local c:1 = (r & 0x800000) != 0; r = (r << 1) | zext(C); C = c; setd1(acc3, r); nz24(r); }
 ALUm: "add" is k7_6=0x1 & k2_0=0x0 { }
@@ -816,27 +866,27 @@ ALU: jj4,acc3 is k7_6=0x1 & k2_0=0x3 & jj4 & acc3 { local r:3 = acc3[24,24] ^ jj
 ALUm: "sub" is k7_6=0x1 & k2_0=0x4 { }
 ALU: S56j,acc3 is k7_6=0x1 & k2_0=0x4 & S56j & acc3 { sub56(acc3, S56j); }
 ALUm: "cmp" is k7_6=0x1 & k2_0=0x5 { }
-ALU: S56j,acc3 is k7_6=0x1 & k2_0=0x5 & S56j & acc3 { sub56(acc3, S56j); }
+ALU: S56j,acc3 is k7_6=0x1 & k2_0=0x5 & S56j & acc3 { cmp56(acc3, S56j); }
 ALUm: "and" is k7_6=0x1 & k2_0=0x6 { }
 ALU: jj4,acc3 is k7_6=0x1 & k2_0=0x6 & jj4 & acc3 { local r:3 = acc3[24,24] & jj4; setd1(acc3, r); nz24(r); }
 ALUm: "cmpm" is k7_6=0x1 & k2_0=0x7 { }
-ALU: S56j,acc3 is k7_6=0x1 & k2_0=0x7 & S56j & acc3 { local d:7 = acc3; if (d s>= 0) goto <p1>; d = -d; <p1> local s:7 = S56j; if (s s>= 0) goto <p2>; s = -s; <p2> sub56(d, s); }
+ALU: S56j,acc3 is k7_6=0x1 & k2_0=0x7 & S56j & acc3 { local d:7 = acc3; if (d s>= 0) goto <p1>; d = -d; <p1> local s:7 = S56j; if (s s>= 0) goto <p2>; s = -s; <p2> cmp56(d, s); }
 ALUm: "mpy" is k7_7=0x1 & k2_0=0x0 { }
-ALU: MulQ,acc3 is k7_7=0x1 & k2_0=0x0 & MulQ & acc3 { alu_r = MulQ; V = 0; nzeu(alu_r); }
+ALU: MulQ,acc3 is k7_7=0x1 & k2_0=0x0 & MulQ & acc3 { alu_r = MulQ; V = 0; fin(alu_r); }
 ALUm: "mpy" is k7_7=0x1 & k2_0=0x4 { }
-ALU: "-"^MulQ,acc3 is k7_7=0x1 & k2_0=0x4 & MulQ & acc3 { alu_r = -MulQ; V = 0; nzeu(alu_r); }
+ALU: "-"^MulQ,acc3 is k7_7=0x1 & k2_0=0x4 & MulQ & acc3 { alu_r = -MulQ; V = 0; fin(alu_r); }
 ALUm: "mpyr" is k7_7=0x1 & k2_0=0x1 { }
-ALU: MulQ,acc3 is k7_7=0x1 & k2_0=0x1 & MulQ & acc3 { alu_r = rnd56(MulQ); V = 0; nzeu(alu_r); }
+ALU: MulQ,acc3 is k7_7=0x1 & k2_0=0x1 & MulQ & acc3 { local p:7 = MulQ; rnd56(p, alu_r); V = 0; fin(alu_r); }
 ALUm: "mpyr" is k7_7=0x1 & k2_0=0x5 { }
-ALU: "-"^MulQ,acc3 is k7_7=0x1 & k2_0=0x5 & MulQ & acc3 { local p:7 = -MulQ; alu_r = rnd56(p); V = 0; nzeu(alu_r); }
+ALU: "-"^MulQ,acc3 is k7_7=0x1 & k2_0=0x5 & MulQ & acc3 { local p:7 = -MulQ; rnd56(p, alu_r); V = 0; fin(alu_r); }
 ALUm: "mac" is k7_7=0x1 & k2_0=0x2 { }
-ALU: MulQ,acc3 is k7_7=0x1 & k2_0=0x2 & MulQ & acc3 { add56(acc3, MulQ); }
+ALU: MulQ,acc3 is k7_7=0x1 & k2_0=0x2 & MulQ & acc3 { mac56(acc3, MulQ); }
 ALUm: "mac" is k7_7=0x1 & k2_0=0x6 { }
-ALU: "-"^MulQ,acc3 is k7_7=0x1 & k2_0=0x6 & MulQ & acc3 { sub56(acc3, MulQ); }
+ALU: "-"^MulQ,acc3 is k7_7=0x1 & k2_0=0x6 & MulQ & acc3 { msub56(acc3, MulQ); }
 ALUm: "macr" is k7_7=0x1 & k2_0=0x3 { }
-ALU: MulQ,acc3 is k7_7=0x1 & k2_0=0x3 & MulQ & acc3 { add56(acc3, MulQ); alu_r = rnd56(alu_r); nzeu(alu_r); }
+ALU: MulQ,acc3 is k7_7=0x1 & k2_0=0x3 & MulQ & acc3 { addv(acc3, MulQ); local q:7; rnd56(alu_r, q); V = V || ((alu_r s>= 0) && (q s< 0)); alu_r = q; fin(alu_r); }
 ALUm: "macr" is k7_7=0x1 & k2_0=0x7 { }
-ALU: "-"^MulQ,acc3 is k7_7=0x1 & k2_0=0x7 & MulQ & acc3 { sub56(acc3, MulQ); alu_r = rnd56(alu_r); nzeu(alu_r); }
+ALU: "-"^MulQ,acc3 is k7_7=0x1 & k2_0=0x7 & MulQ & acc3 { subv(acc3, MulQ); local q:7; rnd56(alu_r, q); V = V || ((alu_r s>= 0) && (q s< 0)); alu_r = q; fin(alu_r); }
 
 # Write-back of the ALU result (after the parallel move has read its sources)
 ALUW: is acc3 { acc3 = alu_r; }
@@ -876,6 +926,12 @@ PM: R5rS^",x:<"^k13_8    is k23_22=0x1 & k19_19=0x0 & k15_14=0x0 & k13_8 & R5rS 
 PM: "y:<"^k13_8^","^R5wS is k23_22=0x1 & k19_19=0x1 & k15_14=0x2 & k13_8 & R5wS { mv1 = *[Y]:3 k13_8:3; build R5wS; }
 PM: R5rS^",y:<"^k13_8    is k23_22=0x1 & k19_19=0x1 & k15_14=0x0 & k13_8 & R5rS { mv1 = R5rS; *[Y]:3 k13_8:3 = mv1; }
 
+# limited 24-bit reads of A and B (one data shifter/limiter each)
+LimXA: is epsilon { local v:3; sat24(a, v); export v; }
+LimXB: is epsilon { local v:3; sat24(b, v); export v; }
+LimYA: is epsilon { local v:3; sat24(a, v); export v; }
+LimYB: is epsilon { local v:3; sat24(b, v); export v; }
+
 # L: long (X:Y pair) moves.  LLL = bit 19, bits 17..16.  Bit 19 is spelled out
 # in each PM pattern so these outrank the X/Y forms (whose register code would
 # be invalid here); SLEIGH does not consult subtable patterns when choosing.
@@ -883,10 +939,10 @@ LSr: "a10" is k19_19=0 & k17_16=0 { local v:6 = a10; export v; }
 LSr: "b10" is k19_19=0 & k17_16=1 { local v:6 = b10; export v; }
 LSr: "x"   is k19_19=0 & k17_16=2 { export x; }
 LSr: "y"   is k19_19=0 & k17_16=3 { export y; }
-LSr: "a"   is k19_19=1 & k17_16=0 { local v:6 = sat48(a); export v; }
-LSr: "b"   is k19_19=1 & k17_16=1 { local v:6 = sat48(b); export v; }
-LSr: "ab"  is k19_19=1 & k17_16=2 { local h:3 = sat24(a); local l:3 = sat24(b); local v:6 = (zext(h) << 24) | zext(l); export v; }
-LSr: "ba"  is k19_19=1 & k17_16=3 { local h:3 = sat24(b); local l:3 = sat24(a); local v:6 = (zext(h) << 24) | zext(l); export v; }
+LSr: "a"   is k19_19=1 & k17_16=0 { local v:6; sat48(a, v); export v; }
+LSr: "b"   is k19_19=1 & k17_16=1 { local v:6; sat48(b, v); export v; }
+LSr: "ab"  is k19_19=1 & k17_16=2 & LimXA & LimYB { local v:6 = (zext(LimXA) << 24) | zext(LimYB); export v; }
+LSr: "ba"  is k19_19=1 & k17_16=3 & LimXB & LimYA { local v:6 = (zext(LimXB) << 24) | zext(LimYA); export v; }
 LDw: "a10" is k19_19=0 & k17_16=0 { a10 = zext(mv1) << 24 | zext(mv2); }
 LDw: "b10" is k19_19=0 & k17_16=1 { b10 = zext(mv1) << 24 | zext(mv2); }
 LDw: "x"   is k19_19=0 & k17_16=2 { x1 = mv1; x0 = mv2; }
@@ -908,16 +964,16 @@ PM: LSr^",l:<"^k13_8     is k23_18=0x12 & k15_14=0x0 & k13_8 & LSr { local v:6 =
 # Single register views used by the X:R, R:Y and X:Y forms
 XR2r: "x0" is k19_18=0 { export x0; }
 XR2r: "x1" is k19_18=1 { export x1; }
-XR2r: "a"  is k19_18=2 { local v:3 = sat24(a); export v; }
-XR2r: "b"  is k19_18=3 { local v:3 = sat24(b); export v; }
+XR2r: "a"  is k19_18=2 & LimXA { export LimXA; }
+XR2r: "b"  is k19_18=3 & LimXB { export LimXB; }
 XR2w: "x0" is k19_18=0 { x0 = mv1; }
 XR2w: "x1" is k19_18=1 { x1 = mv1; }
 XR2w: "a"  is k19_18=2 { fr56(a, mv1); }
 XR2w: "b"  is k19_18=3 { fr56(b, mv1); }
 YR2r: "y0" is k17_16=0 { export y0; }
 YR2r: "y1" is k17_16=1 { export y1; }
-YR2r: "a"  is k17_16=2 { local v:3 = sat24(a); export v; }
-YR2r: "b"  is k17_16=3 { local v:3 = sat24(b); export v; }
+YR2r: "a"  is k17_16=2 & LimYA { export LimYA; }
+YR2r: "b"  is k17_16=3 & LimYB { export LimYB; }
 YR2w: "y0" is k17_16=0 { y0 = mv2; }
 YR2w: "y1" is k17_16=1 { y1 = mv2; }
 YR2w: "a"  is k17_16=2 { fr56(a, mv2); }
@@ -929,24 +985,24 @@ X1w18: "x1" is k18_18=1 { x1 = mv1; }
 
 # X:R  -- X memory move plus accumulator (bit 17) to y0/y1 (bit 16)
 PM: "x:"^EA^","^XR2w^" "^acc17^","^Y1w16 is (k23_20=0x1 & k15_14=0x2 & XR2w & acc17 & Y1w16) ... & EA
-	{ mv1 = *[X]:3 EA; mv2 = sat24(acc17); build XR2w; build Y1w16; }
+	{ mv1 = *[X]:3 EA; sat24(acc17, mv2); build XR2w; build Y1w16; }
 PM: XR2r^",x:"^EA^" "^acc17^","^Y1w16    is (k23_20=0x1 & k15_14=0x0 & XR2r & acc17 & Y1w16) ... & EA
-	{ mv1 = XR2r; mv2 = sat24(acc17); *[X]:3 EA = mv1; build Y1w16; }
+	{ mv1 = XR2r; sat24(acc17, mv2); *[X]:3 EA = mv1; build Y1w16; }
 PM: IMM^","^XR2w^" "^acc17^","^Y1w16     is (k23_20=0x1 & k15_14=0x2 & XR2w & acc17 & Y1w16) ... & IMM
-	{ mv1 = IMM; mv2 = sat24(acc17); build XR2w; build Y1w16; }
+	{ mv1 = IMM; sat24(acc17, mv2); build XR2w; build Y1w16; }
 # R:Y  -- accumulator (bit 19) to x0/x1 (bit 18) plus Y memory move
 PM: acc19^","^X1w18^" y:"^EA^","^YR2w is (k23_20=0x1 & k15_14=0x3 & acc19 & X1w18 & YR2w) ... & EA
-	{ mv1 = sat24(acc19); mv2 = *[Y]:3 EA; build X1w18; build YR2w; }
+	{ sat24(acc19, mv1); mv2 = *[Y]:3 EA; build X1w18; build YR2w; }
 PM: acc19^","^X1w18^" "^YR2r^",y:"^EA is (k23_20=0x1 & k15_14=0x1 & acc19 & X1w18 & YR2r) ... & EA
-	{ mv1 = sat24(acc19); mv2 = YR2r; *[Y]:3 EA = mv2; build X1w18; }
+	{ sat24(acc19, mv1); mv2 = YR2r; *[Y]:3 EA = mv2; build X1w18; }
 PM: acc19^","^X1w18^" "^IMM^","^YR2w  is (k23_20=0x1 & k15_14=0x3 & acc19 & X1w18 & YR2w) ... & IMM
-	{ mv1 = sat24(acc19); mv2 = IMM; build X1w18; build YR2w; }
+	{ sat24(acc19, mv1); mv2 = IMM; build X1w18; build YR2w; }
 
 # Class II:  A -> X:ea, X0 -> A   /   Y0 -> A, A -> Y:ea
 PM: acc16^",x:"^EA^" x0,"^acc16b is (k23_17=0x4 & k15_14=0x0 & acc16 & acc16b) ... & EA
-	{ mv1 = sat24(acc16); *[X]:3 EA = mv1; fr56(acc16, x0); }
+	{ sat24(acc16, mv1); *[X]:3 EA = mv1; fr56(acc16, x0); }
 PM: "y0,"^acc16^" "^acc16b^",y:"^EA is (k23_17=0x4 & k15_14=0x2 & acc16 & acc16b) ... & EA
-	{ mv1 = sat24(acc16); *[Y]:3 EA = mv1; fr56(acc16, y0); }
+	{ sat24(acc16, mv1); *[Y]:3 EA = mv1; fr56(acc16, y0); }
 
 # X:Y dual moves.  W (bit 15) = X direction, w (bit 22) = Y direction
 PM: "x:"^XEA^","^XR2w^" y:"^YEA^","^YR2w is k23_22=0x3 & k15_15=0x1 & XEA & XR2w & YEA & YR2w
@@ -1119,58 +1175,58 @@ instr: "ori" "#"^k15_8^",eom"  is k23_16=0x0 & k7_0=0xfb & k15_8 { omr = omr | (
 # ------------------------------------------------------------ immediate ALU
 instr: "add" "#"^k13_8^","^acc3 is k23_14=0x5 & k7_4=0x8 & k2_0=0x0 & k13_8 & acc3 { local s:7 = zext(k13_8:3) << 24; add56(acc3, s); acc3 = alu_r; }
 instr: "sub" "#"^k13_8^","^acc3 is k23_14=0x5 & k7_4=0x8 & k2_0=0x4 & k13_8 & acc3 { local s:7 = zext(k13_8:3) << 24; sub56(acc3, s); acc3 = alu_r; }
-instr: "cmp" "#"^k13_8^","^acc3 is k23_14=0x5 & k7_4=0x8 & k2_0=0x5 & k13_8 & acc3 { local s:7 = zext(k13_8:3) << 24; sub56(acc3, s); }
+instr: "cmp" "#"^k13_8^","^acc3 is k23_14=0x5 & k7_4=0x8 & k2_0=0x5 & k13_8 & acc3 { local s:7 = zext(k13_8:3) << 24; cmp56(acc3, s); }
 instr: "and" "#"^k13_8^","^acc3 is k23_14=0x5 & k7_4=0x8 & k2_0=0x6 & k13_8 & acc3 { local r:3 = acc3[24,24] & k13_8; setd1(acc3, r); acc3 = alu_r; nz24(r); }
 instr: "or"  "#"^k13_8^","^acc3 is k23_14=0x5 & k7_4=0x8 & k2_0=0x2 & k13_8 & acc3 { local r:3 = acc3[24,24] | k13_8; setd1(acc3, r); acc3 = alu_r; nz24(r); }
 instr: "eor" "#"^k13_8^","^acc3 is k23_14=0x5 & k7_4=0x8 & k2_0=0x3 & k13_8 & acc3 { local r:3 = acc3[24,24] ^ k13_8; setd1(acc3, r); acc3 = alu_r; nz24(r); }
 instr: "add" "#>"^ext24^","^acc3 is k23_4=0x140c & k2_0=0x0 & acc3 ; ext24 { local s:7 = sext(ext24:3); s = s << 24; add56(acc3, s); acc3 = alu_r; }
 instr: "sub" "#>"^ext24^","^acc3 is k23_4=0x140c & k2_0=0x4 & acc3 ; ext24 { local s:7 = sext(ext24:3); s = s << 24; sub56(acc3, s); acc3 = alu_r; }
-instr: "cmp" "#>"^ext24^","^acc3 is k23_4=0x140c & k2_0=0x5 & acc3 ; ext24 { local s:7 = sext(ext24:3); s = s << 24; sub56(acc3, s); }
+instr: "cmp" "#>"^ext24^","^acc3 is k23_4=0x140c & k2_0=0x5 & acc3 ; ext24 { local s:7 = sext(ext24:3); s = s << 24; cmp56(acc3, s); }
 instr: "and" "#>"^ext24^","^acc3 is k23_4=0x140c & k2_0=0x6 & acc3 ; ext24 { local r:3 = acc3[24,24] & ext24; setd1(acc3, r); acc3 = alu_r; nz24(r); }
 instr: "or"  "#>"^ext24^","^acc3 is k23_4=0x140c & k2_0=0x2 & acc3 ; ext24 { local r:3 = acc3[24,24] | ext24; setd1(acc3, r); acc3 = alu_r; nz24(r); }
 instr: "eor" "#>"^ext24^","^acc3 is k23_4=0x140c & k2_0=0x3 & acc3 ; ext24 { local r:3 = acc3[24,24] ^ ext24; setd1(acc3, r); acc3 = alu_r; nz24(r); }
 
 # ----------------------------------------------------------- multiplies
 # (+/-)S,#n,D : S * 2^-n
-instr: "mpy"  qq2^",#"^k12_8^","^acc3      is k23_13=0x8 & k7_6=0x3 & k2_0=0x0 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; alu_r = p; V = 0; nzeu(alu_r); acc3 = alu_r; }
-instr: "mpy"  "-"^qq2^",#"^k12_8^","^acc3  is k23_13=0x8 & k7_6=0x3 & k2_0=0x4 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; alu_r = -p; V = 0; nzeu(alu_r); acc3 = alu_r; }
-instr: "mpyr" qq2^",#"^k12_8^","^acc3      is k23_13=0x8 & k7_6=0x3 & k2_0=0x1 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; alu_r = rnd56(p); V = 0; nzeu(alu_r); acc3 = alu_r; }
-instr: "mpyr" "-"^qq2^",#"^k12_8^","^acc3  is k23_13=0x8 & k7_6=0x3 & k2_0=0x5 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = -((p << 24) s>> k12_8); alu_r = rnd56(p); V = 0; nzeu(alu_r); acc3 = alu_r; }
-instr: "mac"  qq2^",#"^k12_8^","^acc3      is k23_13=0x8 & k7_6=0x3 & k2_0=0x2 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; add56(acc3, p); acc3 = alu_r; }
-instr: "mac"  "-"^qq2^",#"^k12_8^","^acc3  is k23_13=0x8 & k7_6=0x3 & k2_0=0x6 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; sub56(acc3, p); acc3 = alu_r; }
-instr: "macr" qq2^",#"^k12_8^","^acc3      is k23_13=0x8 & k7_6=0x3 & k2_0=0x3 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; add56(acc3, p); acc3 = rnd56(alu_r); nzeu(acc3); }
-instr: "macr" "-"^qq2^",#"^k12_8^","^acc3  is k23_13=0x8 & k7_6=0x3 & k2_0=0x7 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; sub56(acc3, p); acc3 = rnd56(alu_r); nzeu(acc3); }
+instr: "mpy"  qq2^",#"^k12_8^","^acc3      is k23_13=0x8 & k7_6=0x3 & k2_0=0x0 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; alu_r = p; V = 0; fin(alu_r); acc3 = alu_r; }
+instr: "mpy"  "-"^qq2^",#"^k12_8^","^acc3  is k23_13=0x8 & k7_6=0x3 & k2_0=0x4 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; alu_r = -p; V = 0; fin(alu_r); acc3 = alu_r; }
+instr: "mpyr" qq2^",#"^k12_8^","^acc3      is k23_13=0x8 & k7_6=0x3 & k2_0=0x1 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; rnd56(p, alu_r); V = 0; fin(alu_r); acc3 = alu_r; }
+instr: "mpyr" "-"^qq2^",#"^k12_8^","^acc3  is k23_13=0x8 & k7_6=0x3 & k2_0=0x5 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = -((p << 24) s>> k12_8); rnd56(p, alu_r); V = 0; fin(alu_r); acc3 = alu_r; }
+instr: "mac"  qq2^",#"^k12_8^","^acc3      is k23_13=0x8 & k7_6=0x3 & k2_0=0x2 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; mac56(acc3, p); acc3 = alu_r; }
+instr: "mac"  "-"^qq2^",#"^k12_8^","^acc3  is k23_13=0x8 & k7_6=0x3 & k2_0=0x6 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; msub56(acc3, p); acc3 = alu_r; }
+instr: "macr" qq2^",#"^k12_8^","^acc3      is k23_13=0x8 & k7_6=0x3 & k2_0=0x3 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; addv(acc3, p); local q:7; rnd56(alu_r, q); V = V || ((alu_r s>= 0) && (q s< 0)); alu_r = q; fin(alu_r); acc3 = alu_r; }
+instr: "macr" "-"^qq2^",#"^k12_8^","^acc3  is k23_13=0x8 & k7_6=0x3 & k2_0=0x7 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; subv(acc3, p); local q:7; rnd56(alu_r, q); V = V || ((alu_r s>= 0) && (q s< 0)); alu_r = q; fin(alu_r); acc3 = alu_r; }
 
 # (+/-)#xxxx,S,D
 MImm: "#>"^ext24 is ext24 { local p:7 = sext(ext24:3); export p; }
-instr: "mpyi"  MImm^","^jq4^","^acc3     is k23_6=0x507 & k2_0=0x0 & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; alu_r = p; V = 0; nzeu(alu_r); acc3 = alu_r; }
-instr: "mpyi"  "-"^MImm^","^jq4^","^acc3 is k23_6=0x507 & k2_0=0x4 & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; alu_r = -p; V = 0; nzeu(alu_r); acc3 = alu_r; }
-instr: "mpyri" MImm^","^jq4^","^acc3     is k23_6=0x507 & k2_0=0x1 & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; alu_r = rnd56(p); V = 0; nzeu(alu_r); acc3 = alu_r; }
-instr: "mpyri" "-"^MImm^","^jq4^","^acc3 is k23_6=0x507 & k2_0=0x5 & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; p = -p; alu_r = rnd56(p); V = 0; nzeu(alu_r); acc3 = alu_r; }
-instr: "maci"  MImm^","^jq4^","^acc3     is k23_6=0x507 & k2_0=0x2 & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; add56(acc3, p); acc3 = alu_r; }
-instr: "maci"  "-"^MImm^","^jq4^","^acc3 is k23_6=0x507 & k2_0=0x6 & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; sub56(acc3, p); acc3 = alu_r; }
-instr: "macri" MImm^","^jq4^","^acc3     is k23_6=0x507 & k2_0=0x3 & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; add56(acc3, p); acc3 = rnd56(alu_r); nzeu(acc3); }
-instr: "macri" "-"^MImm^","^jq4^","^acc3 is k23_6=0x507 & k2_0=0x7 & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; sub56(acc3, p); acc3 = rnd56(alu_r); nzeu(acc3); }
+instr: "mpyi"  MImm^","^jq4^","^acc3     is k23_6=0x507 & k2_0=0x0 & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; alu_r = p; V = 0; fin(alu_r); acc3 = alu_r; }
+instr: "mpyi"  "-"^MImm^","^jq4^","^acc3 is k23_6=0x507 & k2_0=0x4 & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; alu_r = -p; V = 0; fin(alu_r); acc3 = alu_r; }
+instr: "mpyri" MImm^","^jq4^","^acc3     is k23_6=0x507 & k2_0=0x1 & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; rnd56(p, alu_r); V = 0; fin(alu_r); acc3 = alu_r; }
+instr: "mpyri" "-"^MImm^","^jq4^","^acc3 is k23_6=0x507 & k2_0=0x5 & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; p = -p; rnd56(p, alu_r); V = 0; fin(alu_r); acc3 = alu_r; }
+instr: "maci"  MImm^","^jq4^","^acc3     is k23_6=0x507 & k2_0=0x2 & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; mac56(acc3, p); acc3 = alu_r; }
+instr: "maci"  "-"^MImm^","^jq4^","^acc3 is k23_6=0x507 & k2_0=0x6 & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; msub56(acc3, p); acc3 = alu_r; }
+instr: "macri" MImm^","^jq4^","^acc3     is k23_6=0x507 & k2_0=0x3 & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; addv(acc3, p); local q:7; rnd56(alu_r, q); V = V || ((alu_r s>= 0) && (q s< 0)); alu_r = q; fin(alu_r); acc3 = alu_r; }
+instr: "macri" "-"^MImm^","^jq4^","^acc3 is k23_6=0x507 & k2_0=0x7 & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; subv(acc3, p); local q:7; rnd56(alu_r, q); V = V || ((alu_r s>= 0) && (q s< 0)); alu_r = q; fin(alu_r); acc3 = alu_r; }
 
 # signed x unsigned / unsigned x unsigned; QQQQ operand pairs in bits 3..0
 QSU: q4a^","^q4b is q4a & q4b { local p:7 = (sext(q4a) * zext(q4b)) << 1; export p; }
 QUU: q4a^","^q4b is q4a & q4b { local p:7 = (zext(q4a) * zext(q4b)) << 1; export p; }
 QSS: q4a^","^q4b is q4a & q4b { local p:7 = (sext(q4a) * sext(q4b)) << 1; export p; }
-instr: "macsu" QSU^","^acc5     is k23_6=0x49a & k4_4=0x0 & QSU & acc5 { add56(acc5, QSU); acc5 = alu_r; }
-instr: "macsu" "-"^QSU^","^acc5 is k23_6=0x49a & k4_4=0x1 & QSU & acc5 { sub56(acc5, QSU); acc5 = alu_r; }
-instr: "macuu" QUU^","^acc5     is k23_6=0x49b & k4_4=0x0 & QUU & acc5 { add56(acc5, QUU); acc5 = alu_r; }
-instr: "macuu" "-"^QUU^","^acc5 is k23_6=0x49b & k4_4=0x1 & QUU & acc5 { sub56(acc5, QUU); acc5 = alu_r; }
-instr: "mpysu" QSU^","^acc5     is k23_6=0x49e & k4_4=0x0 & QSU & acc5 { alu_r = QSU; V = 0; nzeu(alu_r); acc5 = alu_r; }
-instr: "mpysu" "-"^QSU^","^acc5 is k23_6=0x49e & k4_4=0x1 & QSU & acc5 { alu_r = -QSU; V = 0; nzeu(alu_r); acc5 = alu_r; }
-instr: "mpyuu" QUU^","^acc5     is k23_6=0x49f & k4_4=0x0 & QUU & acc5 { alu_r = QUU; V = 0; nzeu(alu_r); acc5 = alu_r; }
-instr: "mpyuu" "-"^QUU^","^acc5 is k23_6=0x49f & k4_4=0x1 & QUU & acc5 { alu_r = -QUU; V = 0; nzeu(alu_r); acc5 = alu_r; }
+instr: "macsu" QSU^","^acc5     is k23_6=0x49a & k4_4=0x0 & QSU & acc5 { macu56(acc5, QSU); acc5 = alu_r; }
+instr: "macsu" "-"^QSU^","^acc5 is k23_6=0x49a & k4_4=0x1 & QSU & acc5 { msubu56(acc5, QSU); acc5 = alu_r; }
+instr: "macuu" QUU^","^acc5     is k23_6=0x49b & k4_4=0x0 & QUU & acc5 { macu56(acc5, QUU); acc5 = alu_r; }
+instr: "macuu" "-"^QUU^","^acc5 is k23_6=0x49b & k4_4=0x1 & QUU & acc5 { msubu56(acc5, QUU); acc5 = alu_r; }
+instr: "mpysu" QSU^","^acc5     is k23_6=0x49e & k4_4=0x0 & QSU & acc5 { alu_r = QSU; V = 0; finu(alu_r); acc5 = alu_r; }
+instr: "mpysu" "-"^QSU^","^acc5 is k23_6=0x49e & k4_4=0x1 & QSU & acc5 { alu_r = -QSU; V = 0; finu(alu_r); acc5 = alu_r; }
+instr: "mpyuu" QUU^","^acc5     is k23_6=0x49f & k4_4=0x0 & QUU & acc5 { alu_r = QUU; V = 0; finu(alu_r); acc5 = alu_r; }
+instr: "mpyuu" "-"^QUU^","^acc5 is k23_6=0x49f & k4_4=0x1 & QUU & acc5 { alu_r = -QUU; V = 0; finu(alu_r); acc5 = alu_r; }
 # DMAC: acc = (acc >> 24) +/- s1*s2
-instr: "dmacss" QSS^","^acc5     is k23_6=0x492 & k4_4=0x0 & QSS & acc5 { local d:7 = acc5 s>> 24; add56(d, QSS); acc5 = alu_r; }
-instr: "dmacss" "-"^QSS^","^acc5 is k23_6=0x492 & k4_4=0x1 & QSS & acc5 { local d:7 = acc5 s>> 24; sub56(d, QSS); acc5 = alu_r; }
-instr: "dmacsu" QSU^","^acc5     is k23_6=0x496 & k4_4=0x0 & QSU & acc5 { local d:7 = acc5 s>> 24; add56(d, QSU); acc5 = alu_r; }
-instr: "dmacsu" "-"^QSU^","^acc5 is k23_6=0x496 & k4_4=0x1 & QSU & acc5 { local d:7 = acc5 s>> 24; sub56(d, QSU); acc5 = alu_r; }
-instr: "dmacuu" QUU^","^acc5     is k23_6=0x497 & k4_4=0x0 & QUU & acc5 { local d:7 = acc5 s>> 24; add56(d, QUU); acc5 = alu_r; }
-instr: "dmacuu" "-"^QUU^","^acc5 is k23_6=0x497 & k4_4=0x1 & QUU & acc5 { local d:7 = acc5 s>> 24; sub56(d, QUU); acc5 = alu_r; }
+instr: "dmacss" QSS^","^acc5     is k23_6=0x492 & k4_4=0x0 & QSS & acc5 { local d:7 = acc5 s>> 24; macu56(d, QSS); acc5 = alu_r; }
+instr: "dmacss" "-"^QSS^","^acc5 is k23_6=0x492 & k4_4=0x1 & QSS & acc5 { local d:7 = acc5 s>> 24; msubu56(d, QSS); acc5 = alu_r; }
+instr: "dmacsu" QSU^","^acc5     is k23_6=0x496 & k4_4=0x0 & QSU & acc5 { local d:7 = acc5 s>> 24; macu56(d, QSU); acc5 = alu_r; }
+instr: "dmacsu" "-"^QSU^","^acc5 is k23_6=0x496 & k4_4=0x1 & QSU & acc5 { local d:7 = acc5 s>> 24; msubu56(d, QSU); acc5 = alu_r; }
+instr: "dmacuu" QUU^","^acc5     is k23_6=0x497 & k4_4=0x0 & QUU & acc5 { local d:7 = acc5 s>> 24; macu56(d, QUU); acc5 = alu_r; }
+instr: "dmacuu" "-"^QUU^","^acc5 is k23_6=0x497 & k4_4=0x1 & QUU & acc5 { local d:7 = acc5 s>> 24; msubu56(d, QUU); acc5 = alu_r; }
 
 # ---------------------------------------------------- other data ALU ops
 instr: "div" jj4^","^acc3 is k23_6=0x601 & k2_0=0x0 & jj4 & acc3 { acc3 = div_step(acc3, jj4, C); C = acc3 s>= 0; V = 0; }

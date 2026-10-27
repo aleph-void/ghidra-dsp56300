@@ -129,58 +129,58 @@ instr: "ori" "#"^k15_8^",eom"  is {00000000????????11111011} & k15_8 { omr = omr
 # ------------------------------------------------------------ immediate ALU
 instr: "add" "#"^k13_8^","^acc3 is {0000000101??????1000?000} & k13_8 & acc3 { local s:7 = zext(k13_8:3) << 24; add56(acc3, s); acc3 = alu_r; }
 instr: "sub" "#"^k13_8^","^acc3 is {0000000101??????1000?100} & k13_8 & acc3 { local s:7 = zext(k13_8:3) << 24; sub56(acc3, s); acc3 = alu_r; }
-instr: "cmp" "#"^k13_8^","^acc3 is {0000000101??????1000?101} & k13_8 & acc3 { local s:7 = zext(k13_8:3) << 24; sub56(acc3, s); }
+instr: "cmp" "#"^k13_8^","^acc3 is {0000000101??????1000?101} & k13_8 & acc3 { local s:7 = zext(k13_8:3) << 24; cmp56(acc3, s); }
 instr: "and" "#"^k13_8^","^acc3 is {0000000101??????1000?110} & k13_8 & acc3 { local r:3 = acc3[24,24] & k13_8; setd1(acc3, r); acc3 = alu_r; nz24(r); }
 instr: "or"  "#"^k13_8^","^acc3 is {0000000101??????1000?010} & k13_8 & acc3 { local r:3 = acc3[24,24] | k13_8; setd1(acc3, r); acc3 = alu_r; nz24(r); }
 instr: "eor" "#"^k13_8^","^acc3 is {0000000101??????1000?011} & k13_8 & acc3 { local r:3 = acc3[24,24] ^ k13_8; setd1(acc3, r); acc3 = alu_r; nz24(r); }
 instr: "add" "#>"^ext24^","^acc3 is {00000001010000001100?000} & acc3 ; ext24 { local s:7 = sext(ext24:3); s = s << 24; add56(acc3, s); acc3 = alu_r; }
 instr: "sub" "#>"^ext24^","^acc3 is {00000001010000001100?100} & acc3 ; ext24 { local s:7 = sext(ext24:3); s = s << 24; sub56(acc3, s); acc3 = alu_r; }
-instr: "cmp" "#>"^ext24^","^acc3 is {00000001010000001100?101} & acc3 ; ext24 { local s:7 = sext(ext24:3); s = s << 24; sub56(acc3, s); }
+instr: "cmp" "#>"^ext24^","^acc3 is {00000001010000001100?101} & acc3 ; ext24 { local s:7 = sext(ext24:3); s = s << 24; cmp56(acc3, s); }
 instr: "and" "#>"^ext24^","^acc3 is {00000001010000001100?110} & acc3 ; ext24 { local r:3 = acc3[24,24] & ext24; setd1(acc3, r); acc3 = alu_r; nz24(r); }
 instr: "or"  "#>"^ext24^","^acc3 is {00000001010000001100?010} & acc3 ; ext24 { local r:3 = acc3[24,24] | ext24; setd1(acc3, r); acc3 = alu_r; nz24(r); }
 instr: "eor" "#>"^ext24^","^acc3 is {00000001010000001100?011} & acc3 ; ext24 { local r:3 = acc3[24,24] ^ ext24; setd1(acc3, r); acc3 = alu_r; nz24(r); }
 
 # ----------------------------------------------------------- multiplies
 # (+/-)S,#n,D : S * 2^-n
-instr: "mpy"  qq2^",#"^k12_8^","^acc3      is {00000001000?????11???000} & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; alu_r = p; V = 0; nzeu(alu_r); acc3 = alu_r; }
-instr: "mpy"  "-"^qq2^",#"^k12_8^","^acc3  is {00000001000?????11???100} & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; alu_r = -p; V = 0; nzeu(alu_r); acc3 = alu_r; }
-instr: "mpyr" qq2^",#"^k12_8^","^acc3      is {00000001000?????11???001} & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; alu_r = rnd56(p); V = 0; nzeu(alu_r); acc3 = alu_r; }
-instr: "mpyr" "-"^qq2^",#"^k12_8^","^acc3  is {00000001000?????11???101} & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = -((p << 24) s>> k12_8); alu_r = rnd56(p); V = 0; nzeu(alu_r); acc3 = alu_r; }
-instr: "mac"  qq2^",#"^k12_8^","^acc3      is {00000001000?????11???010} & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; add56(acc3, p); acc3 = alu_r; }
-instr: "mac"  "-"^qq2^",#"^k12_8^","^acc3  is {00000001000?????11???110} & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; sub56(acc3, p); acc3 = alu_r; }
-instr: "macr" qq2^",#"^k12_8^","^acc3      is {00000001000?????11???011} & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; add56(acc3, p); acc3 = rnd56(alu_r); nzeu(acc3); }
-instr: "macr" "-"^qq2^",#"^k12_8^","^acc3  is {00000001000?????11???111} & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; sub56(acc3, p); acc3 = rnd56(alu_r); nzeu(acc3); }
+instr: "mpy"  qq2^",#"^k12_8^","^acc3      is {00000001000?????11???000} & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; alu_r = p; V = 0; fin(alu_r); acc3 = alu_r; }
+instr: "mpy"  "-"^qq2^",#"^k12_8^","^acc3  is {00000001000?????11???100} & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; alu_r = -p; V = 0; fin(alu_r); acc3 = alu_r; }
+instr: "mpyr" qq2^",#"^k12_8^","^acc3      is {00000001000?????11???001} & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; rnd56(p, alu_r); V = 0; fin(alu_r); acc3 = alu_r; }
+instr: "mpyr" "-"^qq2^",#"^k12_8^","^acc3  is {00000001000?????11???101} & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = -((p << 24) s>> k12_8); rnd56(p, alu_r); V = 0; fin(alu_r); acc3 = alu_r; }
+instr: "mac"  qq2^",#"^k12_8^","^acc3      is {00000001000?????11???010} & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; mac56(acc3, p); acc3 = alu_r; }
+instr: "mac"  "-"^qq2^",#"^k12_8^","^acc3  is {00000001000?????11???110} & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; msub56(acc3, p); acc3 = alu_r; }
+instr: "macr" qq2^",#"^k12_8^","^acc3      is {00000001000?????11???011} & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; addv(acc3, p); local q:7; rnd56(alu_r, q); V = V || ((alu_r s>= 0) && (q s< 0)); alu_r = q; fin(alu_r); acc3 = alu_r; }
+instr: "macr" "-"^qq2^",#"^k12_8^","^acc3  is {00000001000?????11???111} & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; subv(acc3, p); local q:7; rnd56(alu_r, q); V = V || ((alu_r s>= 0) && (q s< 0)); alu_r = q; fin(alu_r); acc3 = alu_r; }
 
 # (+/-)#xxxx,S,D
 MImm: "#>"^ext24 is ext24 { local p:7 = sext(ext24:3); export p; }
-instr: "mpyi"  MImm^","^jq4^","^acc3     is {000000010100000111???000} & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; alu_r = p; V = 0; nzeu(alu_r); acc3 = alu_r; }
-instr: "mpyi"  "-"^MImm^","^jq4^","^acc3 is {000000010100000111???100} & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; alu_r = -p; V = 0; nzeu(alu_r); acc3 = alu_r; }
-instr: "mpyri" MImm^","^jq4^","^acc3     is {000000010100000111???001} & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; alu_r = rnd56(p); V = 0; nzeu(alu_r); acc3 = alu_r; }
-instr: "mpyri" "-"^MImm^","^jq4^","^acc3 is {000000010100000111???101} & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; p = -p; alu_r = rnd56(p); V = 0; nzeu(alu_r); acc3 = alu_r; }
-instr: "maci"  MImm^","^jq4^","^acc3     is {000000010100000111???010} & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; add56(acc3, p); acc3 = alu_r; }
-instr: "maci"  "-"^MImm^","^jq4^","^acc3 is {000000010100000111???110} & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; sub56(acc3, p); acc3 = alu_r; }
-instr: "macri" MImm^","^jq4^","^acc3     is {000000010100000111???011} & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; add56(acc3, p); acc3 = rnd56(alu_r); nzeu(acc3); }
-instr: "macri" "-"^MImm^","^jq4^","^acc3 is {000000010100000111???111} & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; sub56(acc3, p); acc3 = rnd56(alu_r); nzeu(acc3); }
+instr: "mpyi"  MImm^","^jq4^","^acc3     is {000000010100000111???000} & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; alu_r = p; V = 0; fin(alu_r); acc3 = alu_r; }
+instr: "mpyi"  "-"^MImm^","^jq4^","^acc3 is {000000010100000111???100} & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; alu_r = -p; V = 0; fin(alu_r); acc3 = alu_r; }
+instr: "mpyri" MImm^","^jq4^","^acc3     is {000000010100000111???001} & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; rnd56(p, alu_r); V = 0; fin(alu_r); acc3 = alu_r; }
+instr: "mpyri" "-"^MImm^","^jq4^","^acc3 is {000000010100000111???101} & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; p = -p; rnd56(p, alu_r); V = 0; fin(alu_r); acc3 = alu_r; }
+instr: "maci"  MImm^","^jq4^","^acc3     is {000000010100000111???010} & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; mac56(acc3, p); acc3 = alu_r; }
+instr: "maci"  "-"^MImm^","^jq4^","^acc3 is {000000010100000111???110} & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; msub56(acc3, p); acc3 = alu_r; }
+instr: "macri" MImm^","^jq4^","^acc3     is {000000010100000111???011} & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; addv(acc3, p); local q:7; rnd56(alu_r, q); V = V || ((alu_r s>= 0) && (q s< 0)); alu_r = q; fin(alu_r); acc3 = alu_r; }
+instr: "macri" "-"^MImm^","^jq4^","^acc3 is {000000010100000111???111} & jq4 & acc3 ; MImm { local p:7 = (MImm * sext(jq4)) << 1; subv(acc3, p); local q:7; rnd56(alu_r, q); V = V || ((alu_r s>= 0) && (q s< 0)); alu_r = q; fin(alu_r); acc3 = alu_r; }
 
 # signed x unsigned / unsigned x unsigned; QQQQ operand pairs in bits 3..0
 QSU: q4a^","^q4b is q4a & q4b { local p:7 = (sext(q4a) * zext(q4b)) << 1; export p; }
 QUU: q4a^","^q4b is q4a & q4b { local p:7 = (zext(q4a) * zext(q4b)) << 1; export p; }
 QSS: q4a^","^q4b is q4a & q4b { local p:7 = (sext(q4a) * sext(q4b)) << 1; export p; }
-instr: "macsu" QSU^","^acc5     is {00000001001001101 0?0????} & QSU & acc5 { add56(acc5, QSU); acc5 = alu_r; }
-instr: "macsu" "-"^QSU^","^acc5 is {00000001001001101 0?1????} & QSU & acc5 { sub56(acc5, QSU); acc5 = alu_r; }
-instr: "macuu" QUU^","^acc5     is {00000001001001101 1?0????} & QUU & acc5 { add56(acc5, QUU); acc5 = alu_r; }
-instr: "macuu" "-"^QUU^","^acc5 is {00000001001001101 1?1????} & QUU & acc5 { sub56(acc5, QUU); acc5 = alu_r; }
-instr: "mpysu" QSU^","^acc5     is {00000001001001111 0?0????} & QSU & acc5 { alu_r = QSU; V = 0; nzeu(alu_r); acc5 = alu_r; }
-instr: "mpysu" "-"^QSU^","^acc5 is {00000001001001111 0?1????} & QSU & acc5 { alu_r = -QSU; V = 0; nzeu(alu_r); acc5 = alu_r; }
-instr: "mpyuu" QUU^","^acc5     is {00000001001001111 1?0????} & QUU & acc5 { alu_r = QUU; V = 0; nzeu(alu_r); acc5 = alu_r; }
-instr: "mpyuu" "-"^QUU^","^acc5 is {00000001001001111 1?1????} & QUU & acc5 { alu_r = -QUU; V = 0; nzeu(alu_r); acc5 = alu_r; }
+instr: "macsu" QSU^","^acc5     is {00000001001001101 0?0????} & QSU & acc5 { macu56(acc5, QSU); acc5 = alu_r; }
+instr: "macsu" "-"^QSU^","^acc5 is {00000001001001101 0?1????} & QSU & acc5 { msubu56(acc5, QSU); acc5 = alu_r; }
+instr: "macuu" QUU^","^acc5     is {00000001001001101 1?0????} & QUU & acc5 { macu56(acc5, QUU); acc5 = alu_r; }
+instr: "macuu" "-"^QUU^","^acc5 is {00000001001001101 1?1????} & QUU & acc5 { msubu56(acc5, QUU); acc5 = alu_r; }
+instr: "mpysu" QSU^","^acc5     is {00000001001001111 0?0????} & QSU & acc5 { alu_r = QSU; V = 0; finu(alu_r); acc5 = alu_r; }
+instr: "mpysu" "-"^QSU^","^acc5 is {00000001001001111 0?1????} & QSU & acc5 { alu_r = -QSU; V = 0; finu(alu_r); acc5 = alu_r; }
+instr: "mpyuu" QUU^","^acc5     is {00000001001001111 1?0????} & QUU & acc5 { alu_r = QUU; V = 0; finu(alu_r); acc5 = alu_r; }
+instr: "mpyuu" "-"^QUU^","^acc5 is {00000001001001111 1?1????} & QUU & acc5 { alu_r = -QUU; V = 0; finu(alu_r); acc5 = alu_r; }
 # DMAC: acc = (acc >> 24) +/- s1*s2
-instr: "dmacss" QSS^","^acc5     is {000000010010010 0 1 0 ? 0 ????} & QSS & acc5 { local d:7 = acc5 s>> 24; add56(d, QSS); acc5 = alu_r; }
-instr: "dmacss" "-"^QSS^","^acc5 is {000000010010010 0 1 0 ? 1 ????} & QSS & acc5 { local d:7 = acc5 s>> 24; sub56(d, QSS); acc5 = alu_r; }
-instr: "dmacsu" QSU^","^acc5     is {000000010010010 1 1 0 ? 0 ????} & QSU & acc5 { local d:7 = acc5 s>> 24; add56(d, QSU); acc5 = alu_r; }
-instr: "dmacsu" "-"^QSU^","^acc5 is {000000010010010 1 1 0 ? 1 ????} & QSU & acc5 { local d:7 = acc5 s>> 24; sub56(d, QSU); acc5 = alu_r; }
-instr: "dmacuu" QUU^","^acc5     is {000000010010010 1 1 1 ? 0 ????} & QUU & acc5 { local d:7 = acc5 s>> 24; add56(d, QUU); acc5 = alu_r; }
-instr: "dmacuu" "-"^QUU^","^acc5 is {000000010010010 1 1 1 ? 1 ????} & QUU & acc5 { local d:7 = acc5 s>> 24; sub56(d, QUU); acc5 = alu_r; }
+instr: "dmacss" QSS^","^acc5     is {000000010010010 0 1 0 ? 0 ????} & QSS & acc5 { local d:7 = acc5 s>> 24; macu56(d, QSS); acc5 = alu_r; }
+instr: "dmacss" "-"^QSS^","^acc5 is {000000010010010 0 1 0 ? 1 ????} & QSS & acc5 { local d:7 = acc5 s>> 24; msubu56(d, QSS); acc5 = alu_r; }
+instr: "dmacsu" QSU^","^acc5     is {000000010010010 1 1 0 ? 0 ????} & QSU & acc5 { local d:7 = acc5 s>> 24; macu56(d, QSU); acc5 = alu_r; }
+instr: "dmacsu" "-"^QSU^","^acc5 is {000000010010010 1 1 0 ? 1 ????} & QSU & acc5 { local d:7 = acc5 s>> 24; msubu56(d, QSU); acc5 = alu_r; }
+instr: "dmacuu" QUU^","^acc5     is {000000010010010 1 1 1 ? 0 ????} & QUU & acc5 { local d:7 = acc5 s>> 24; macu56(d, QUU); acc5 = alu_r; }
+instr: "dmacuu" "-"^QUU^","^acc5 is {000000010010010 1 1 1 ? 1 ????} & QUU & acc5 { local d:7 = acc5 s>> 24; msubu56(d, QUU); acc5 = alu_r; }
 
 # ---------------------------------------------------- other data ALU ops
 instr: "div" jj4^","^acc3 is {000000011000000001???000} & jj4 & acc3 { acc3 = div_step(acc3, jj4, C); C = acc3 s>= 0; V = 0; }

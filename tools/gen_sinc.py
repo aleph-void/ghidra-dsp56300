@@ -112,7 +112,7 @@ def code_constraint(segments, value):
 
 def reg_read(r):
     if r in ('a', 'b'):
-        return '{ local v:3 = sat24(%s); export v; }' % r
+        return '{ local v:3; sat24(%s, v); export v; }' % r
     if r in ('a2', 'b2'):
         return '{ local v:3 = sext(%s); export v; }' % r
     if r == 'sr':
