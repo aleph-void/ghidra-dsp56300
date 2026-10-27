@@ -1335,8 +1335,8 @@ instr: "jsclr" BitN^","^R6r8^","^Abs24  is k23_14=0x2f & k7_5=0x0 & BitN & R6r8 
 instr: "jsset" BitN^","^R6r8^","^Abs24  is k23_14=0x2f & k7_5=0x1 & BitN & R6r8 ; Abs24 { local v:3 = R6r8; bittest(v, BitN); if (!C) goto inst_next; jsrTo(Abs24); }
 
 # branches on bit (PC relative)
-instr: "brclr" BitN^","^MEA6^","^Rel24 is (k23_14=0x32 & k7_7=0x0 & k5_5=0x0 & BitN) ... & MEA6 ; Rel24 { local v:3 = MEA6; bittest(v, BitN); if (!C) goto Rel24; }
-instr: "brset" BitN^","^MEA6^","^Rel24 is (k23_14=0x32 & k7_7=0x0 & k5_5=0x1 & BitN) ... & MEA6 ; Rel24 { local v:3 = MEA6; bittest(v, BitN); if (C) goto Rel24; }
+instr: "brclr" BitN^","^MEAx6^","^Rel24 is k23_14=0x32 & k7_7=0x0 & k5_5=0x0 & BitN & MEAx6 ; Rel24 { local v:3 = MEAx6; bittest(v, BitN); if (!C) goto Rel24; }
+instr: "brset" BitN^","^MEAx6^","^Rel24 is k23_14=0x32 & k7_7=0x0 & k5_5=0x1 & BitN & MEAx6 ; Rel24 { local v:3 = MEAx6; bittest(v, BitN); if (C) goto Rel24; }
 instr: "brclr" BitN^","^Maa6^","^Rel24 is k23_14=0x32 & k7_7=0x1 & k5_5=0x0 & BitN & Maa6 ; Rel24 { local v:3 = Maa6; bittest(v, BitN); if (!C) goto Rel24; }
 instr: "brset" BitN^","^Maa6^","^Rel24 is k23_14=0x32 & k7_7=0x1 & k5_5=0x1 & BitN & Maa6 ; Rel24 { local v:3 = Maa6; bittest(v, BitN); if (C) goto Rel24; }
 instr: "brclr" BitN^","^Mpp6^","^Rel24 is k23_14=0x33 & k7_7=0x0 & k5_5=0x0 & BitN & Mpp6 ; Rel24 { local v:3 = Mpp6; bittest(v, BitN); if (!C) goto Rel24; }
@@ -1345,8 +1345,8 @@ instr: "brclr" BitN^","^Mqq6^","^Rel24 is k23_14=0x12 & k7_7=0x0 & k5_5=0x0 & Bi
 instr: "brset" BitN^","^Mqq6^","^Rel24 is k23_14=0x12 & k7_7=0x0 & k5_5=0x1 & BitN & Mqq6 ; Rel24 { local v:3 = Mqq6; bittest(v, BitN); if (C) goto Rel24; }
 instr: "brclr" BitN^","^R6r8^","^Rel24 is k23_14=0x33 & k7_5=0x4 & BitN & R6r8 ; Rel24 { local v:3 = R6r8; bittest(v, BitN); if (!C) goto Rel24; }
 instr: "brset" BitN^","^R6r8^","^Rel24 is k23_14=0x33 & k7_5=0x5 & BitN & R6r8 ; Rel24 { local v:3 = R6r8; bittest(v, BitN); if (C) goto Rel24; }
-instr: "bsclr" BitN^","^MEA6^","^Rel24 is (k23_14=0x36 & k7_7=0x0 & k5_5=0x0 & BitN) ... & MEA6 ; Rel24 { local v:3 = MEA6; bittest(v, BitN); if (C) goto inst_next; jsrTo(Rel24); }
-instr: "bsset" BitN^","^MEA6^","^Rel24 is (k23_14=0x36 & k7_7=0x0 & k5_5=0x1 & BitN) ... & MEA6 ; Rel24 { local v:3 = MEA6; bittest(v, BitN); if (!C) goto inst_next; jsrTo(Rel24); }
+instr: "bsclr" BitN^","^MEAx6^","^Rel24 is k23_14=0x36 & k7_7=0x0 & k5_5=0x0 & BitN & MEAx6 ; Rel24 { local v:3 = MEAx6; bittest(v, BitN); if (C) goto inst_next; jsrTo(Rel24); }
+instr: "bsset" BitN^","^MEAx6^","^Rel24 is k23_14=0x36 & k7_7=0x0 & k5_5=0x1 & BitN & MEAx6 ; Rel24 { local v:3 = MEAx6; bittest(v, BitN); if (!C) goto inst_next; jsrTo(Rel24); }
 instr: "bsclr" BitN^","^Maa6^","^Rel24 is k23_14=0x36 & k7_7=0x1 & k5_5=0x0 & BitN & Maa6 ; Rel24 { local v:3 = Maa6; bittest(v, BitN); if (C) goto inst_next; jsrTo(Rel24); }
 instr: "bsset" BitN^","^Maa6^","^Rel24 is k23_14=0x36 & k7_7=0x1 & k5_5=0x1 & BitN & Maa6 ; Rel24 { local v:3 = Maa6; bittest(v, BitN); if (!C) goto inst_next; jsrTo(Rel24); }
 instr: "bsclr" BitN^","^Mpp6^","^Rel24 is k23_14=0x37 & k7_7=0x0 & k5_5=0x0 & BitN & Mpp6 ; Rel24 { local v:3 = Mpp6; bittest(v, BitN); if (C) goto inst_next; jsrTo(Rel24); }
