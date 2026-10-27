@@ -71,7 +71,6 @@ define context contextreg
   ltop  = (8,31) noflow    # loop start address for lbot/lbot2
 ;
 
-define pcodeop agu_modulo; # modulo / reverse-carry address update
 define pcodeop halt_stop;
 define pcodeop halt_wait;
 define pcodeop reset_peripherals;

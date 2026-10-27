@@ -65,10 +65,54 @@ attach variables [ xy4 ] [ x y ];
 attach variables [ lua_d ] [ r0 r1 r2 r3 r4 r5 r6 r7 n0 n1 n2 n3 n4 n5 n6 n7 ];
 
 # ------------------------------------------------------------- AGU update
+# Modifier Mn (Family Manual 4.5, Table 4-2; only bits 15..0 count):
+#   $xxFFFF          linear
+#   $xx0000          reverse carry: bit-reversed add (or subtract) of the magnitude
+#   $xx0001-$xx7FFF  modulo Mn+1 inside the 2^k block holding Rn; an offset that is
+#                    a multiple of the block size moves to the same place in another block
+#   $xx8001-$xxBFFF  with Mn & $3FFF = 2^k-1: multiple wrap-around modulo 2^k
+#   other values     reserved, treated as linear
+# |offset| > modulus (other than a block multiple) is unpredictable on the chip;
+# the p-code wraps once.
+macro bitrev24(v, out) {
+	local t:3 = v;
+	t = ((t >> 1) & 0x555555) | ((t & 0x555555) << 1);
+	t = ((t >> 2) & 0x333333) | ((t & 0x333333) << 2);
+	t = ((t >> 4) & 0x0f0f0f) | ((t & 0x0f0f0f) << 4);
+	out = (t >> 16) | (t & 0x00ff00) | (t << 16);
+}
+
 macro agu_add(r, d, m) {
 @ifdef AGU_MODULO
-	local dd:3 = d;
-	r = agu_modulo(r, dd, m);
+	local off:3 = d;
+	local m16:3 = m & 0xffff;
+	local lin:3 = r + off;
+	local mk:3 = m16 | (m16 >> 1);
+	mk = mk | (mk >> 2);
+	mk = mk | (mk >> 4);
+	mk = mk | (mk >> 8);
+	local base:3 = r & ~mk;
+	local rel:4 = zext(r - base) + sext(off);
+	local modlen:4 = zext(m16) + 1;
+	rel = rel - (modlen * zext(rel s> zext(m16))) + (modlen * zext(rel s< 0));
+	local blockjump:1 = (off & mk) == 0;
+	local md:3 = ((base + rel:3) * zext(!blockjump)) + (lin * zext(blockjump));
+	local wm:3 = m16 & 0x3fff;
+	local mw:3 = (r & ~wm) | (lin & wm);
+	local neg:1 = off s< 0;
+	local mag:3 = (off * zext(!neg)) + ((-off) * zext(neg));
+	local rr:3;
+	bitrev24(r, rr);
+	local rm:3;
+	bitrev24(mag, rm);
+	local rs:3 = rr + (rm * zext(!neg)) - (rm * zext(neg));
+	local rv:3;
+	bitrev24(rs, rv);
+	local isRev:1 = m16 == 0;
+	local isMod:1 = (m16 != 0) && (m16 < 0x8000);
+	local isMw:1 = ((m16 & 0xc000) == 0x8000) && (wm != 0) && ((wm & (wm + 1)) == 0);
+	local isLin:1 = !isRev && !isMod && !isMw;
+	r = (lin * zext(isLin)) + (rv * zext(isRev)) + (md * zext(isMod)) + (mw * zext(isMw));
 @else
 	r = r + d;
 @endif
