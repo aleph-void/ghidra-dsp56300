@@ -104,6 +104,11 @@ define token op(24)
   q4b   = (0,3)
   qq2   = (4,5)
   jq4   = (4,5)
+  # aliases of shift-count fields, for range constraints (a field shown in the
+  # display cannot also be constrained with < or >)
+  n12_8 = (8,12)
+  n6_1  = (1,6)
+  n5_1  = (1,5)
 ;
 
 define token ext(24)
@@ -1113,14 +1118,14 @@ instr: "eor" "#>"^ext24^","^acc3 is k23_4=0x140c & k2_0=0x3 & acc3 ; ext24 { loc
 
 # ----------------------------------------------------------- multiplies
 # (+/-)S,#n,D : S * 2^-n
-instr: "mpy"  qq2^",#"^k12_8^","^acc3      is k23_13=0x8 & k7_6=0x3 & k2_0=0x0 & qq2 & k12_8 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; alu_r = p; V = 0; nzeu(alu_r); acc3 = alu_r; }
-instr: "mpy"  "-"^qq2^",#"^k12_8^","^acc3  is k23_13=0x8 & k7_6=0x3 & k2_0=0x4 & qq2 & k12_8 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; alu_r = -p; V = 0; nzeu(alu_r); acc3 = alu_r; }
-instr: "mpyr" qq2^",#"^k12_8^","^acc3      is k23_13=0x8 & k7_6=0x3 & k2_0=0x1 & qq2 & k12_8 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; alu_r = rnd56(p); V = 0; nzeu(alu_r); acc3 = alu_r; }
-instr: "mpyr" "-"^qq2^",#"^k12_8^","^acc3  is k23_13=0x8 & k7_6=0x3 & k2_0=0x5 & qq2 & k12_8 & acc3 { local p:7 = sext(qq2); p = -((p << 24) s>> k12_8); alu_r = rnd56(p); V = 0; nzeu(alu_r); acc3 = alu_r; }
-instr: "mac"  qq2^",#"^k12_8^","^acc3      is k23_13=0x8 & k7_6=0x3 & k2_0=0x2 & qq2 & k12_8 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; add56(acc3, p); acc3 = alu_r; }
-instr: "mac"  "-"^qq2^",#"^k12_8^","^acc3  is k23_13=0x8 & k7_6=0x3 & k2_0=0x6 & qq2 & k12_8 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; sub56(acc3, p); acc3 = alu_r; }
-instr: "macr" qq2^",#"^k12_8^","^acc3      is k23_13=0x8 & k7_6=0x3 & k2_0=0x3 & qq2 & k12_8 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; add56(acc3, p); acc3 = rnd56(alu_r); nzeu(acc3); }
-instr: "macr" "-"^qq2^",#"^k12_8^","^acc3  is k23_13=0x8 & k7_6=0x3 & k2_0=0x7 & qq2 & k12_8 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; sub56(acc3, p); acc3 = rnd56(alu_r); nzeu(acc3); }
+instr: "mpy"  qq2^",#"^k12_8^","^acc3      is k23_13=0x8 & k7_6=0x3 & k2_0=0x0 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; alu_r = p; V = 0; nzeu(alu_r); acc3 = alu_r; }
+instr: "mpy"  "-"^qq2^",#"^k12_8^","^acc3  is k23_13=0x8 & k7_6=0x3 & k2_0=0x4 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; alu_r = -p; V = 0; nzeu(alu_r); acc3 = alu_r; }
+instr: "mpyr" qq2^",#"^k12_8^","^acc3      is k23_13=0x8 & k7_6=0x3 & k2_0=0x1 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; alu_r = rnd56(p); V = 0; nzeu(alu_r); acc3 = alu_r; }
+instr: "mpyr" "-"^qq2^",#"^k12_8^","^acc3  is k23_13=0x8 & k7_6=0x3 & k2_0=0x5 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = -((p << 24) s>> k12_8); alu_r = rnd56(p); V = 0; nzeu(alu_r); acc3 = alu_r; }
+instr: "mac"  qq2^",#"^k12_8^","^acc3      is k23_13=0x8 & k7_6=0x3 & k2_0=0x2 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; add56(acc3, p); acc3 = alu_r; }
+instr: "mac"  "-"^qq2^",#"^k12_8^","^acc3  is k23_13=0x8 & k7_6=0x3 & k2_0=0x6 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; sub56(acc3, p); acc3 = alu_r; }
+instr: "macr" qq2^",#"^k12_8^","^acc3      is k23_13=0x8 & k7_6=0x3 & k2_0=0x3 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; add56(acc3, p); acc3 = rnd56(alu_r); nzeu(acc3); }
+instr: "macr" "-"^qq2^",#"^k12_8^","^acc3  is k23_13=0x8 & k7_6=0x3 & k2_0=0x7 & qq2 & k12_8 & n12_8>0 & n12_8<24 & acc3 { local p:7 = sext(qq2); p = (p << 24) s>> k12_8; sub56(acc3, p); acc3 = rnd56(alu_r); nzeu(acc3); }
 
 # (+/-)#xxxx,S,D
 MImm: "#>"^ext24 is ext24 { local p:7 = sext(ext24:3); export p; }
@@ -1161,11 +1166,11 @@ instr: "clb" acc1^","^acc0 is k23_2=0x30780 & acc1 & acc0 { local n:3 = clb(acc1
 instr: "cmpu" nacc0^","^acc0 is k23_1=0x60ff8 & nacc0 & acc0 { C = acc0 < nacc0; Z = acc0 == nacc0; N = 0; V = 0; }
 instr: "cmpu" ACT3^","^acc0  is k23_4=0xc1ff & k3_3=1 & ACT3 & acc0 { local s:7 = zext(ACT3) << 24; local d:7 = acc0 & 0xffffffffffff; C = d < s; Z = d == s; N = 0; V = 0; }
 
-instr: "asl" "#"^k6_1^","^acc7^","^acc0 is k23_8=0xc1d & k6_1 & acc7 & acc0 {
+instr: "asl" "#"^k6_1^","^acc7^","^acc0 is k23_8=0xc1d & k6_1 & n6_1<41 & acc7 & acc0 {
 	local n:7 = k6_1; local r:7 = acc7 << n; C = n != 0 && ((acc7 >> (56 - n)) & 1) != 0;
 	V = (r s>> n) != acc7; L = L || V; acc0 = r; nzeu(r);
 }
-instr: "asr" "#"^k6_1^","^acc7^","^acc0 is k23_8=0xc1c & k6_1 & acc7 & acc0 {
+instr: "asr" "#"^k6_1^","^acc7^","^acc0 is k23_8=0xc1c & k6_1 & n6_1<41 & acc7 & acc0 {
 	local n:7 = k6_1; C = n != 0 && ((acc7 >> (n - 1)) & 1) != 0;
 	local r:7 = acc7 s>> n; V = 0; acc0 = r; nzeu(r);
 }
@@ -1175,8 +1180,8 @@ instr: "asl" ACT3^","^acc4^","^acc0 is k23_5=0x60f2 & ACT3 & acc4 & acc0 {
 instr: "asr" ACT3^","^acc4^","^acc0 is k23_5=0x60f3 & ACT3 & acc4 & acc0 {
 	local n:7 = zext(ACT3 & 0x3f); local r:7 = acc4 s>> n; V = 0; acc0 = r; nzeu(r);
 }
-instr: "lsl" "#"^k5_1^","^acc0 is k23_6=0x307a & k5_1 & acc0 { local r:3 = acc0[24,24] << k5_1; setd1(acc0, r); acc0 = alu_r; nz24(r); }
-instr: "lsr" "#"^k5_1^","^acc0 is k23_6=0x307b & k5_1 & acc0 { local r:3 = acc0[24,24] >> k5_1; setd1(acc0, r); acc0 = alu_r; nz24(r); }
+instr: "lsl" "#"^k5_1^","^acc0 is k23_6=0x307a & k5_1 & n5_1<17 & acc0 { local r:3 = acc0[24,24] << k5_1; setd1(acc0, r); acc0 = alu_r; nz24(r); }
+instr: "lsr" "#"^k5_1^","^acc0 is k23_6=0x307b & k5_1 & n5_1<24 & acc0 { local r:3 = acc0[24,24] >> k5_1; setd1(acc0, r); acc0 = alu_r; nz24(r); }
 instr: "lsl" ACT3^","^acc0 is k23_4=0xc1e1 & ACT3 & acc0 { local r:3 = acc0[24,24] << (ACT3 & 0x1f); setd1(acc0, r); acc0 = alu_r; nz24(r); }
 instr: "lsr" ACT3^","^acc0 is k23_4=0xc1e3 & ACT3 & acc0 { local r:3 = acc0[24,24] >> (ACT3 & 0x1f); setd1(acc0, r); acc0 = alu_r; nz24(r); }
 

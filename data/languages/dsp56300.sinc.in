@@ -36,6 +36,11 @@ define token op(24)
   q4b   = (0,3)
   qq2   = (4,5)
   jq4   = (4,5)
+  # aliases of shift-count fields, for range constraints (a field shown in the
+  # display cannot also be constrained with < or >)
+  n12_8 = (8,12)
+  n6_1  = (1,6)
+  n5_1  = (1,5)
 ;
 
 define token ext(24)
