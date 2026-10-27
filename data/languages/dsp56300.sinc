@@ -661,7 +661,7 @@ CC0: "cc" is k3_0=0x0 { local c:1 = !C; export c; }
 CC0: "ge" is k3_0=0x1 { local c:1 = N == V; export c; }
 CC0: "ne" is k3_0=0x2 { local c:1 = !Z; export c; }
 CC0: "pl" is k3_0=0x3 { local c:1 = !N; export c; }
-CC0: "nn" is k3_0=0x4 { local c:1 = Z || (!U && !E); export c; }
+CC0: "nn" is k3_0=0x4 { local c:1 = !(Z || (!U && !E)); export c; }
 CC0: "ec" is k3_0=0x5 { local c:1 = !E; export c; }
 CC0: "lc" is k3_0=0x6 { local c:1 = !L; export c; }
 CC0: "gt" is k3_0=0x7 { local c:1 = !Z && (N == V); export c; }
@@ -669,7 +669,7 @@ CC0: "cs" is k3_0=0x8 { local c:1 = C; export c; }
 CC0: "lt" is k3_0=0x9 { local c:1 = N != V; export c; }
 CC0: "eq" is k3_0=0xa { local c:1 = Z; export c; }
 CC0: "mi" is k3_0=0xb { local c:1 = N; export c; }
-CC0: "nr" is k3_0=0xc { local c:1 = !Z && (U || E); export c; }
+CC0: "nr" is k3_0=0xc { local c:1 = Z || (!U && !E); export c; }
 CC0: "es" is k3_0=0xd { local c:1 = E; export c; }
 CC0: "ls" is k3_0=0xe { local c:1 = L; export c; }
 CC0: "le" is k3_0=0xf { local c:1 = Z || (N != V); export c; }
@@ -677,7 +677,7 @@ CC8: "cc" is k11_8=0x0 { local c:1 = !C; export c; }
 CC8: "ge" is k11_8=0x1 { local c:1 = N == V; export c; }
 CC8: "ne" is k11_8=0x2 { local c:1 = !Z; export c; }
 CC8: "pl" is k11_8=0x3 { local c:1 = !N; export c; }
-CC8: "nn" is k11_8=0x4 { local c:1 = Z || (!U && !E); export c; }
+CC8: "nn" is k11_8=0x4 { local c:1 = !(Z || (!U && !E)); export c; }
 CC8: "ec" is k11_8=0x5 { local c:1 = !E; export c; }
 CC8: "lc" is k11_8=0x6 { local c:1 = !L; export c; }
 CC8: "gt" is k11_8=0x7 { local c:1 = !Z && (N == V); export c; }
@@ -685,7 +685,7 @@ CC8: "cs" is k11_8=0x8 { local c:1 = C; export c; }
 CC8: "lt" is k11_8=0x9 { local c:1 = N != V; export c; }
 CC8: "eq" is k11_8=0xa { local c:1 = Z; export c; }
 CC8: "mi" is k11_8=0xb { local c:1 = N; export c; }
-CC8: "nr" is k11_8=0xc { local c:1 = !Z && (U || E); export c; }
+CC8: "nr" is k11_8=0xc { local c:1 = Z || (!U && !E); export c; }
 CC8: "es" is k11_8=0xd { local c:1 = E; export c; }
 CC8: "ls" is k11_8=0xe { local c:1 = L; export c; }
 CC8: "le" is k11_8=0xf { local c:1 = Z || (N != V); export c; }
@@ -693,7 +693,7 @@ CC12: "cc" is k15_12=0x0 { local c:1 = !C; export c; }
 CC12: "ge" is k15_12=0x1 { local c:1 = N == V; export c; }
 CC12: "ne" is k15_12=0x2 { local c:1 = !Z; export c; }
 CC12: "pl" is k15_12=0x3 { local c:1 = !N; export c; }
-CC12: "nn" is k15_12=0x4 { local c:1 = Z || (!U && !E); export c; }
+CC12: "nn" is k15_12=0x4 { local c:1 = !(Z || (!U && !E)); export c; }
 CC12: "ec" is k15_12=0x5 { local c:1 = !E; export c; }
 CC12: "lc" is k15_12=0x6 { local c:1 = !L; export c; }
 CC12: "gt" is k15_12=0x7 { local c:1 = !Z && (N == V); export c; }
@@ -701,7 +701,7 @@ CC12: "cs" is k15_12=0x8 { local c:1 = C; export c; }
 CC12: "lt" is k15_12=0x9 { local c:1 = N != V; export c; }
 CC12: "eq" is k15_12=0xa { local c:1 = Z; export c; }
 CC12: "mi" is k15_12=0xb { local c:1 = N; export c; }
-CC12: "nr" is k15_12=0xc { local c:1 = !Z && (U || E); export c; }
+CC12: "nr" is k15_12=0xc { local c:1 = Z || (!U && !E); export c; }
 CC12: "es" is k15_12=0xd { local c:1 = E; export c; }
 CC12: "ls" is k15_12=0xe { local c:1 = L; export c; }
 CC12: "le" is k15_12=0xf { local c:1 = Z || (N != V); export c; }
