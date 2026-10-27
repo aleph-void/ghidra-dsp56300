@@ -71,10 +71,6 @@ define context contextreg
   ltop  = (8,31) noflow    # loop start address for lbot/lbot2
 ;
 
-define pcodeop div_step;   # one iteration of DIV
-define pcodeop norm_step;  # NORM Rn,D
-define pcodeop normf;      # NORMF S,D
-define pcodeop clb;        # count leading bits
 define pcodeop agu_modulo; # modulo / reverse-carry address update
 define pcodeop halt_stop;
 define pcodeop halt_wait;

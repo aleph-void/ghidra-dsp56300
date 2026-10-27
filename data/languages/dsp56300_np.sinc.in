@@ -183,12 +183,56 @@ instr: "dmacuu" QUU^","^acc5     is {000000010010010 1 1 1 ? 0 ????} & QUU & acc
 instr: "dmacuu" "-"^QUU^","^acc5 is {000000010010010 1 1 1 ? 1 ????} & QUU & acc5 { local d:7 = acc5 s>> 24; msubu56(d, QUU); acc5 = alu_r; }
 
 # ---------------------------------------------------- other data ALU ops
-instr: "div" jj4^","^acc3 is {000000011000000001???000} & jj4 & acc3 { acc3 = div_step(acc3, jj4, C); C = acc3 s>= 0; V = 0; }
-instr: "norm" ea_r^","^acc3 is {0000000111011???0001?101} & ea_r & acc3 { acc3 = norm_step(acc3, ea_r); ea_r = norm_step(acc3, ea_r); }
-instr: "normf" ACT3^","^acc0 is {00001100000111100010????} & ACT3 & acc0 { acc0 = normf(acc0, ACT3); nzeu(acc0); }
-instr: "clb" acc1^","^acc0 is {0000110000011110000000??} & acc1 & acc0 { local n:3 = clb(acc1); fr56(acc0, n); nzeu(acc0); }
-instr: "cmpu" nacc0^","^acc0 is {00001100000111111111000?} & nacc0 & acc0 { C = acc0 < nacc0; Z = acc0 == nacc0; N = 0; V = 0; }
-instr: "cmpu" ACT3^","^acc0  is {00001100000111111111????} & k3_3=1 & ACT3 & acc0 { local s:7 = zext(ACT3) << 24; local d:7 = acc0 & 0xffffffffffff; C = d < s; Z = d == s; N = 0; V = 0; }
+# DIV: shift D left with C into bit 0, then add (signs differ) or subtract S at bits 55..24;
+# V = bit 55 changed by the shift, C = !bit 55 of the result (the quotient bit)
+instr: "div" jj4^","^acc3 is {000000011000000001???000} & jj4 & acc3 {
+	local sx:1 = (acc3 s< 0) != (jj4 s< 0);
+	local t:7 = (acc3 << 1) | zext(C);
+	local hi:4 = t(3);
+	local sv:4 = sext(jj4);
+	local r:4 = hi + (sv * zext(sx)) - (sv * zext(!sx));
+	local res:7 = (zext(r) << 24) | (t & 0xffffff);
+	V = (acc3 s< 0) != (t s< 0);
+	L = L || V;
+	C = !(res s< 0);
+	acc3 = res;
+}
+# NORM: on the current E, U, Z bits: ASL D and Rn-1 if !E & U & !Z, ASR D and Rn+1 if E
+instr: "norm" ea_r^","^acc3 is {0000000111011???0001?101} & ea_r & acc3 {
+	local up:1 = !E && U && !Z;
+	local dn:1 = E;
+	local r:7 = ((acc3 << 1) * zext(up)) + ((acc3 s>> 1) * zext(dn)) + (acc3 * zext(!up && !dn));
+	V = up && ((acc3 s< 0) != (r s< 0));
+	L = L || V;
+	ea_r = ea_r - zext(up) + zext(dn);
+	acc3 = r;
+	nzeu(r);
+}
+# NORMF: ASR D by S if S >= 0, else ASL D by -S; V = bit 55 changed during a left shift
+instr: "normf" ACT3^","^acc0 is {00001100000111100010????} & ACT3 & acc0 {
+	local sh:3 = ACT3;
+	local neg:1 = sh s< 0;
+	local n:7 = zext((sh * zext(!neg)) + ((-sh) * zext(neg)));
+	local r:7 = ((acc0 s>> n) * zext(!neg)) + ((acc0 << n) * zext(neg));
+	V = neg && ((r s>> n) != acc0);
+	L = L || V;
+	acc0 = r;
+	nzeu(r);
+}
+# CLB: 9 - (leading zeros, or ones if bit 55 is set) as an integer in D1; 0 for S = 0
+instr: "clb" acc1^","^acc0 is {0000110000011110000000??} & acc1 & acc0 {
+	local s:7 = acc1;
+	local inv:7 = s ^ (zext(s s< 0) * 0xffffffffffffff);
+	local lz:1 = lzcount(inv);
+	local n:3 = (9 - zext(lz)) * zext(s != 0);
+	fr56(acc0, n);
+	N = n s< 0;
+	Z = n == 0;
+	V = 0;
+}
+# CMPU: 48-bit unsigned S2[47..0] - S1 (24-bit S1 left aligned); EXT ignored
+instr: "cmpu" nacc0^","^acc0 is {00001100000111111111000?} & nacc0 & acc0 { local s:7 = nacc0 & 0xffffffffffff; local d:7 = acc0 & 0xffffffffffff; local r:7 = d - s; C = d < s; N = r s< 0; Z = (r & 0xffffffffffff) == 0; V = 0; }
+instr: "cmpu" ACT3^","^acc0  is {00001100000111111111????} & k3_3=1 & ACT3 & acc0 { local s:7 = zext(ACT3) << 24; local d:7 = acc0 & 0xffffffffffff; local r:7 = d - s; C = d < s; N = r s< 0; Z = (r & 0xffffffffffff) == 0; V = 0; }
 
 instr: "asl" "#"^k6_1^","^acc7^","^acc0 is {0000110000011101????????} & k6_1 & n6_1<41 & acc7 & acc0 {
 	local n:7 = k6_1; local r:7 = acc7 << n; C = n != 0 && ((acc7 >> (56 - n)) & 1) != 0;
