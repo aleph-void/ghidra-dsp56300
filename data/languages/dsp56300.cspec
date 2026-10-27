@@ -33,6 +33,15 @@
       <entry size="8" alignment="1" />
     </size_alignment_map>
   </data_organization>
+  <!-- The data ALU p-code follows the SR mode bits (scaling, rounding mode, arithmetic
+       saturation).  The decompiler assumes their reset values at function entry (no scaling,
+       convergent rounding, SM off: SR = $C00300), so that the mode tests fold away; code that
+       changes the modes with ORI/ANDI/MOVEC is followed from there. -->
+  <context_data>
+    <tracked_set space="P">
+      <set name="sr" val="0xc00300"/>
+    </tracked_set>
+  </context_data>
   <global>
     <range space="P"/>
     <range space="X"/>
