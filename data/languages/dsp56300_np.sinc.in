@@ -50,20 +50,34 @@ macro push(hi, lo) {
 	*[SS]:3 ssp = lo;
 }
 
+# subroutine call: SSH = return address, SSL = SR (mode bits and CCR)
+macro pushRet(ret) {
+	local psr:3 = 0;
+	packSR(psr);
+	push(ret, psr);
+}
+
 macro jsrTo(dest) {
-	local ret:3 = inst_next;
-	push(ret, sr);
+	local ret:3 = inst_next / 3;
+	pushRet(ret);
 	call dest;
 }
 
-macro doLoop(cnt, lastword, top) {
+# DO: push LA:LC, then PC:SR, set LF (SR bit 15); FV (bit 16) for DO FOREVER
+macro doLoop(cnt, lastword, top, fv) {
 	push(la, lc);
-	push(top, sr);
+	local psr:3 = 0;
+	packSR(psr);
+	push(top, psr);
 	la = lastword;
 	lc = cnt;
+	sr = (sr & 0xfe7fff) | 0x8000 | (zext(fv) << 16);
 }
 
+# loop end: LF and FV come back from the saved SR, then LA:LC are popped
 macro popLoop() {
+	local s:3 = *[SS]:3 ssp;
+	sr = (sr & 0xfe7fff) | (s & 0x018000);
 	lc = *[SS]:3 (ssp - 6);
 	la = *[SS]:3 (ssp - 3);
 	ssp = ssp - 12;
@@ -238,8 +252,8 @@ instr: "lua" EA4^","^R5w0 is {00000100010?????000?????} & EA4 & R5w0 { mv1 = EA4
 LDisp: "+"^disp is s13_13=0 & s13_11 & k7_4 [ disp = (s13_11 << 4) | k7_4; ] { export *[const]:3 disp; }
 LDisp: "-"^ndisp is s13_13=1 & s13_11 & k7_4 [ ndisp = -((s13_11 << 4) | k7_4); ] { local d:3 = -ndisp; export d; }
 instr: "lua" "("^ea_r^LDisp^"),"^lua_d is {0000010000??????????????} & ea_r & LDisp & lua_d { lua_d = ea_r + LDisp; }
-instr: "lra" ea_r^","^R5w0 is {0000010011000???000?????} & ea_r & R5w0 { mv1 = inst_start + ea_r; build R5w0; }
-instr: "lra" Rel24^","^R5w0 is {0000010001000000010?????} & R5w0 ; Rel24 & sext24 { mv1 = inst_start + sext24; build R5w0; }
+instr: "lra" ea_r^","^R5w0 is {0000010011000???000?????} & ea_r & R5w0 { mv1 = (inst_start / 3) + ea_r; build R5w0; }
+instr: "lra" Rel24^","^R5w0 is {0000010001000000010?????} & R5w0 ; Rel24 & sext24 { mv1 = (inst_start / 3) + sext24; build R5w0; }
 
 # ----------------------------------------------------------- moves (np)
 # X:(Rn+xxxx) / Y:(Rn+xxxx), long displacement
@@ -369,63 +383,63 @@ instr: "bsset" BitN^","^R6r8^","^Rel24 is {0000110111??????101?????} & BitN & R6
 # ---------------------------------------------------------- flow control
 instr: "bra" Rel24  is {000011010001000011000000} ; Rel24 { goto Rel24; }
 instr: "bra" Rel9   is {00000101000011????0?????} & Rel9 { goto Rel9; }
-instr: "bra" ea_r   is {0000110100011???11000000} & ea_r { local t:3 = inst_start + ea_r; goto [t]; }
+instr: "bra" ea_r   is {0000110100011???11000000} & ea_r { local t:3 = (inst_start / 3) + ea_r; goto [t]; }
 instr: "bsr" Rel24  is {000011010001000010000000} ; Rel24 { jsrTo(Rel24); }
 instr: "bsr" Rel9   is {00000101000010????0?????} & Rel9 { jsrTo(Rel9); }
-instr: "bsr" ea_r   is {0000110100011???10000000} & ea_r { local t:3 = inst_start + ea_r; local ret:3 = inst_next; push(ret, sr); call [t]; }
+instr: "bsr" ea_r   is {0000110100011???10000000} & ea_r { local t:3 = (inst_start / 3) + ea_r; local ret:3 = inst_next / 3; pushRet(ret); call [t]; }
 instr: "b"^CC0 Rel24  is {00001101000100000100????} & CC0 ; Rel24 { if (CC0) goto Rel24; }
 instr: "b"^CC12 Rel9  is {00000101????01????0?????} & CC12 & Rel9 { if (CC12) goto Rel9; }
-instr: "b"^CC0 ea_r   is {0000110100011???0100????} & CC0 & ea_r { if (!CC0) goto inst_next; local t:3 = inst_start + ea_r; goto [t]; }
+instr: "b"^CC0 ea_r   is {0000110100011???0100????} & CC0 & ea_r { if (!CC0) goto inst_next; local t:3 = (inst_start / 3) + ea_r; goto [t]; }
 instr: "bs"^CC0 Rel24 is {00001101000100000000????} & CC0 ; Rel24 { if (!CC0) goto inst_next; jsrTo(Rel24); }
 instr: "bs"^CC12 Rel9 is {00000101????00????0?????} & CC12 & Rel9 { if (!CC12) goto inst_next; jsrTo(Rel9); }
-instr: "bs"^CC0 ea_r  is {0000110100011???0000????} & CC0 & ea_r { if (!CC0) goto inst_next; local t:3 = inst_start + ea_r; local ret:3 = inst_next; push(ret, sr); call [t]; }
+instr: "bs"^CC0 ea_r  is {0000110100011???0000????} & CC0 & ea_r { if (!CC0) goto inst_next; local t:3 = (inst_start / 3) + ea_r; local ret:3 = inst_next / 3; pushRet(ret); call [t]; }
 
 instr: "jmp" Abs12 is {000011000000????????????} & Abs12 { goto Abs12; }
 instr: "jmp" Abs24 is {000010101111000010000000} ; Abs24 { goto Abs24; }
 instr: "jmp" EAx   is {0000101011??????10000000} & EAx { goto [EAx]; }
 instr: "jsr" Abs12 is {000011010000????????????} & Abs12 { jsrTo(Abs12); }
 instr: "jsr" Abs24 is {000010111111000010000000} ; Abs24 { jsrTo(Abs24); }
-instr: "jsr" EAx   is {0000101111??????10000000} & EAx { local t:3 = EAx; local ret:3 = inst_next; push(ret, sr); call [t]; }
+instr: "jsr" EAx   is {0000101111??????10000000} & EAx { local t:3 = EAx; local ret:3 = inst_next / 3; pushRet(ret); call [t]; }
 instr: "j"^CC12 Abs12  is {00001110????????????????} & CC12 & Abs12 { if (CC12) goto Abs12; }
 instr: "j"^CC0 Abs24   is {00001010111100001010????} & CC0 ; Abs24 { if (CC0) goto Abs24; }
 instr: "j"^CC0 EAx     is {0000101011??????1010????} & CC0 & EAx { if (!CC0) goto inst_next; goto [EAx]; }
 instr: "js"^CC12 Abs12 is {00001111????????????????} & CC12 & Abs12 { if (!CC12) goto inst_next; jsrTo(Abs12); }
 instr: "js"^CC0 Abs24  is {00001011111100001010????} & CC0 ; Abs24 { if (!CC0) goto inst_next; jsrTo(Abs24); }
-instr: "js"^CC0 EAx    is {0000101111??????1010????} & CC0 & EAx { if (!CC0) goto inst_next; local t:3 = EAx; local ret:3 = inst_next; push(ret, sr); call [t]; }
+instr: "js"^CC0 EAx    is {0000101111??????1010????} & CC0 & EAx { if (!CC0) goto inst_next; local t:3 = EAx; local ret:3 = inst_next / 3; pushRet(ret); call [t]; }
 
 # ------------------------------------------------------ hardware loops
 # DO / DOR mark the loop's last word (LA) with context; the root table adds
 # the loop-back there.  A zero count skips the loop.
 instr: "do" MEAx6^","^LAabs is {0000011001??????0?000000} & MEAx6 ; LAabs & LAend & LAval
 	[ lbot=1; lfor=0; ltop=inst_start+2; globalset(LAabs, lbot); globalset(LAabs, lfor); globalset(LAabs, ltop); ]
-	{ local n:3 = MEAx6; local top:3 = inst_next; doLoop(n, LAval, top); if (n != 0) goto inst_next; popLoop(); goto LAend; }
+	{ local n:3 = MEAx6; local top:3 = inst_next / 3; doLoop(n, LAval, top, 0:1); if (n != 0) goto inst_next; popLoop(); goto LAend; }
 instr: "do" Maa6^","^LAabs is {0000011000??????0?000000} & Maa6 ; LAabs & LAend & LAval
 	[ lbot=1; lfor=0; ltop=inst_start+2; globalset(LAabs, lbot); globalset(LAabs, lfor); globalset(LAabs, ltop); ]
-	{ local n:3 = Maa6; local top:3 = inst_next; doLoop(n, LAval, top); if (n != 0) goto inst_next; popLoop(); goto LAend; }
+	{ local n:3 = Maa6; local top:3 = inst_next / 3; doLoop(n, LAval, top, 0:1); if (n != 0) goto inst_next; popLoop(); goto LAend; }
 instr: "do" Cnt12^","^LAabs is {00000110????????1000????} & Cnt12 ; LAabs & LAend & LAval
 	[ lbot=1; lfor=0; ltop=inst_start+2; globalset(LAabs, lbot); globalset(LAabs, lfor); globalset(LAabs, ltop); ]
-	{ local n:3 = Cnt12; local top:3 = inst_next; doLoop(n, LAval, top); if (n != 0) goto inst_next; popLoop(); goto LAend; }
+	{ local n:3 = Cnt12; local top:3 = inst_next / 3; doLoop(n, LAval, top, 0:1); if (n != 0) goto inst_next; popLoop(); goto LAend; }
 instr: "do" R6nos^","^LAabs is {0000011011??????00000000} & R6nos ; LAabs & LAend & LAval
 	[ lbot=1; lfor=0; ltop=inst_start+2; globalset(LAabs, lbot); globalset(LAabs, lfor); globalset(LAabs, ltop); ]
-	{ local n:3 = R6nos; local top:3 = inst_next; doLoop(n, LAval, top); if (n != 0) goto inst_next; popLoop(); goto LAend; }
+	{ local n:3 = R6nos; local top:3 = inst_next / 3; doLoop(n, LAval, top, 0:1); if (n != 0) goto inst_next; popLoop(); goto LAend; }
 instr: "do" "forever,"^LAabs is {000000000000001000000011} ; LAabs & LAval
 	[ lbot=1; lfor=1; ltop=inst_start+2; globalset(LAabs, lbot); globalset(LAabs, lfor); globalset(LAabs, ltop); ]
-	{ local top:3 = inst_next; doLoop(lc, LAval, top); }
+	{ local top:3 = inst_next / 3; doLoop(lc, LAval, top, 1:1); }
 instr: "dor" MEAx6^","^LArend is {0000011001??????0?010000} & MEAx6 ; LArel & LArend & LArval
 	[ lbot=1; lfor=0; ltop=inst_start+2; globalset(LArel, lbot); globalset(LArel, lfor); globalset(LArel, ltop); ]
-	{ local n:3 = MEAx6; local top:3 = inst_next; doLoop(n, LArval, top); if (n != 0) goto inst_next; popLoop(); goto LArend; }
+	{ local n:3 = MEAx6; local top:3 = inst_next / 3; doLoop(n, LArval, top, 0:1); if (n != 0) goto inst_next; popLoop(); goto LArend; }
 instr: "dor" Maa6^","^LArend is {0000011000??????0?010000} & Maa6 ; LArel & LArend & LArval
 	[ lbot=1; lfor=0; ltop=inst_start+2; globalset(LArel, lbot); globalset(LArel, lfor); globalset(LArel, ltop); ]
-	{ local n:3 = Maa6; local top:3 = inst_next; doLoop(n, LArval, top); if (n != 0) goto inst_next; popLoop(); goto LArend; }
+	{ local n:3 = Maa6; local top:3 = inst_next / 3; doLoop(n, LArval, top, 0:1); if (n != 0) goto inst_next; popLoop(); goto LArend; }
 instr: "dor" Cnt12^","^LArend is {00000110????????1001????} & Cnt12 ; LArel & LArend & LArval
 	[ lbot=1; lfor=0; ltop=inst_start+2; globalset(LArel, lbot); globalset(LArel, lfor); globalset(LArel, ltop); ]
-	{ local n:3 = Cnt12; local top:3 = inst_next; doLoop(n, LArval, top); if (n != 0) goto inst_next; popLoop(); goto LArend; }
+	{ local n:3 = Cnt12; local top:3 = inst_next / 3; doLoop(n, LArval, top, 0:1); if (n != 0) goto inst_next; popLoop(); goto LArend; }
 instr: "dor" R6nos^","^LArend is {0000011011??????00010000} & R6nos ; LArel & LArend & LArval
 	[ lbot=1; lfor=0; ltop=inst_start+2; globalset(LArel, lbot); globalset(LArel, lfor); globalset(LArel, ltop); ]
-	{ local n:3 = R6nos; local top:3 = inst_next; doLoop(n, LArval, top); if (n != 0) goto inst_next; popLoop(); goto LArend; }
+	{ local n:3 = R6nos; local top:3 = inst_next / 3; doLoop(n, LArval, top, 0:1); if (n != 0) goto inst_next; popLoop(); goto LArend; }
 instr: "dor" "forever,"^LArend is {000000000000001000000010} ; LArel & LArend & LArval
 	[ lbot=1; lfor=1; ltop=inst_start+2; globalset(LArel, lbot); globalset(LArel, lfor); globalset(LArel, ltop); ]
-	{ local top:3 = inst_next; doLoop(lc, LArval, top); }
+	{ local top:3 = inst_next / 3; doLoop(lc, LArval, top, 1:1); }
 
 instr: "enddo" is {000000000000000010001100} { popLoop(); }
 instr: "brk"^CC0 is {00000000000000100001????} & CC0 {

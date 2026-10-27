@@ -5,6 +5,8 @@
 	lc = lc - 1;
 	goto LoopTop;
 <done>
+	local s:3 = *[SS]:3 ssp;
+	sr = (sr & 0xfe7fff) | (s & 0x018000);
 	lc = *[SS]:3 (ssp - 6);
 	la = *[SS]:3 (ssp - 3);
 	ssp = ssp - 12;

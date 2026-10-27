@@ -1040,20 +1040,34 @@ macro push(hi, lo) {
 	*[SS]:3 ssp = lo;
 }
 
+# subroutine call: SSH = return address, SSL = SR (mode bits and CCR)
+macro pushRet(ret) {
+	local psr:3 = 0;
+	packSR(psr);
+	push(ret, psr);
+}
+
 macro jsrTo(dest) {
-	local ret:3 = inst_next;
-	push(ret, sr);
+	local ret:3 = inst_next / 3;
+	pushRet(ret);
 	call dest;
 }
 
-macro doLoop(cnt, lastword, top) {
+# DO: push LA:LC, then PC:SR, set LF (SR bit 15); FV (bit 16) for DO FOREVER
+macro doLoop(cnt, lastword, top, fv) {
 	push(la, lc);
-	push(top, sr);
+	local psr:3 = 0;
+	packSR(psr);
+	push(top, psr);
 	la = lastword;
 	lc = cnt;
+	sr = (sr & 0xfe7fff) | 0x8000 | (zext(fv) << 16);
 }
 
+# loop end: LF and FV come back from the saved SR, then LA:LC are popped
 macro popLoop() {
+	local s:3 = *[SS]:3 ssp;
+	sr = (sr & 0xfe7fff) | (s & 0x018000);
 	lc = *[SS]:3 (ssp - 6);
 	la = *[SS]:3 (ssp - 3);
 	ssp = ssp - 12;
@@ -1228,8 +1242,8 @@ instr: "lua" EA4^","^R5w0 is k23_13=0x22 & k7_5=0x0 & EA4 & R5w0 { mv1 = EA4; bu
 LDisp: "+"^disp is s13_13=0 & s13_11 & k7_4 [ disp = (s13_11 << 4) | k7_4; ] { export *[const]:3 disp; }
 LDisp: "-"^ndisp is s13_13=1 & s13_11 & k7_4 [ ndisp = -((s13_11 << 4) | k7_4); ] { local d:3 = -ndisp; export d; }
 instr: "lua" "("^ea_r^LDisp^"),"^lua_d is k23_14=0x10 & ea_r & LDisp & lua_d { lua_d = ea_r + LDisp; }
-instr: "lra" ea_r^","^R5w0 is k23_11=0x98 & k7_5=0x0 & ea_r & R5w0 { mv1 = inst_start + ea_r; build R5w0; }
-instr: "lra" Rel24^","^R5w0 is k23_5=0x2202 & R5w0 ; Rel24 & sext24 { mv1 = inst_start + sext24; build R5w0; }
+instr: "lra" ea_r^","^R5w0 is k23_11=0x98 & k7_5=0x0 & ea_r & R5w0 { mv1 = (inst_start / 3) + ea_r; build R5w0; }
+instr: "lra" Rel24^","^R5w0 is k23_5=0x2202 & R5w0 ; Rel24 & sext24 { mv1 = (inst_start / 3) + sext24; build R5w0; }
 
 # ----------------------------------------------------------- moves (np)
 # X:(Rn+xxxx) / Y:(Rn+xxxx), long displacement
@@ -1359,63 +1373,63 @@ instr: "bsset" BitN^","^R6r8^","^Rel24 is k23_14=0x37 & k7_5=0x5 & BitN & R6r8 ;
 # ---------------------------------------------------------- flow control
 instr: "bra" Rel24  is k23_0=0xd10c0 ; Rel24 { goto Rel24; }
 instr: "bra" Rel9   is k23_10=0x143 & k5_5=0x0 & Rel9 { goto Rel9; }
-instr: "bra" ea_r   is k23_11=0x1a3 & k7_0=0xc0 & ea_r { local t:3 = inst_start + ea_r; goto [t]; }
+instr: "bra" ea_r   is k23_11=0x1a3 & k7_0=0xc0 & ea_r { local t:3 = (inst_start / 3) + ea_r; goto [t]; }
 instr: "bsr" Rel24  is k23_0=0xd1080 ; Rel24 { jsrTo(Rel24); }
 instr: "bsr" Rel9   is k23_10=0x142 & k5_5=0x0 & Rel9 { jsrTo(Rel9); }
-instr: "bsr" ea_r   is k23_11=0x1a3 & k7_0=0x80 & ea_r { local t:3 = inst_start + ea_r; local ret:3 = inst_next; push(ret, sr); call [t]; }
+instr: "bsr" ea_r   is k23_11=0x1a3 & k7_0=0x80 & ea_r { local t:3 = (inst_start / 3) + ea_r; local ret:3 = inst_next / 3; pushRet(ret); call [t]; }
 instr: "b"^CC0 Rel24  is k23_4=0xd104 & CC0 ; Rel24 { if (CC0) goto Rel24; }
 instr: "b"^CC12 Rel9  is k23_16=0x5 & k11_10=0x1 & k5_5=0x0 & CC12 & Rel9 { if (CC12) goto Rel9; }
-instr: "b"^CC0 ea_r   is k23_11=0x1a3 & k7_4=0x4 & CC0 & ea_r { if (!CC0) goto inst_next; local t:3 = inst_start + ea_r; goto [t]; }
+instr: "b"^CC0 ea_r   is k23_11=0x1a3 & k7_4=0x4 & CC0 & ea_r { if (!CC0) goto inst_next; local t:3 = (inst_start / 3) + ea_r; goto [t]; }
 instr: "bs"^CC0 Rel24 is k23_4=0xd100 & CC0 ; Rel24 { if (!CC0) goto inst_next; jsrTo(Rel24); }
 instr: "bs"^CC12 Rel9 is k23_16=0x5 & k11_10=0x0 & k5_5=0x0 & CC12 & Rel9 { if (!CC12) goto inst_next; jsrTo(Rel9); }
-instr: "bs"^CC0 ea_r  is k23_11=0x1a3 & k7_4=0x0 & CC0 & ea_r { if (!CC0) goto inst_next; local t:3 = inst_start + ea_r; local ret:3 = inst_next; push(ret, sr); call [t]; }
+instr: "bs"^CC0 ea_r  is k23_11=0x1a3 & k7_4=0x0 & CC0 & ea_r { if (!CC0) goto inst_next; local t:3 = (inst_start / 3) + ea_r; local ret:3 = inst_next / 3; pushRet(ret); call [t]; }
 
 instr: "jmp" Abs12 is k23_12=0xc0 & Abs12 { goto Abs12; }
 instr: "jmp" Abs24 is k23_0=0xaf080 ; Abs24 { goto Abs24; }
 instr: "jmp" EAx   is k23_14=0x2b & k7_0=0x80 & EAx { goto [EAx]; }
 instr: "jsr" Abs12 is k23_12=0xd0 & Abs12 { jsrTo(Abs12); }
 instr: "jsr" Abs24 is k23_0=0xbf080 ; Abs24 { jsrTo(Abs24); }
-instr: "jsr" EAx   is k23_14=0x2f & k7_0=0x80 & EAx { local t:3 = EAx; local ret:3 = inst_next; push(ret, sr); call [t]; }
+instr: "jsr" EAx   is k23_14=0x2f & k7_0=0x80 & EAx { local t:3 = EAx; local ret:3 = inst_next / 3; pushRet(ret); call [t]; }
 instr: "j"^CC12 Abs12  is k23_16=0xe & CC12 & Abs12 { if (CC12) goto Abs12; }
 instr: "j"^CC0 Abs24   is k23_4=0xaf0a & CC0 ; Abs24 { if (CC0) goto Abs24; }
 instr: "j"^CC0 EAx     is k23_14=0x2b & k7_4=0xa & CC0 & EAx { if (!CC0) goto inst_next; goto [EAx]; }
 instr: "js"^CC12 Abs12 is k23_16=0xf & CC12 & Abs12 { if (!CC12) goto inst_next; jsrTo(Abs12); }
 instr: "js"^CC0 Abs24  is k23_4=0xbf0a & CC0 ; Abs24 { if (!CC0) goto inst_next; jsrTo(Abs24); }
-instr: "js"^CC0 EAx    is k23_14=0x2f & k7_4=0xa & CC0 & EAx { if (!CC0) goto inst_next; local t:3 = EAx; local ret:3 = inst_next; push(ret, sr); call [t]; }
+instr: "js"^CC0 EAx    is k23_14=0x2f & k7_4=0xa & CC0 & EAx { if (!CC0) goto inst_next; local t:3 = EAx; local ret:3 = inst_next / 3; pushRet(ret); call [t]; }
 
 # ------------------------------------------------------ hardware loops
 # DO / DOR mark the loop's last word (LA) with context; the root table adds
 # the loop-back there.  A zero count skips the loop.
 instr: "do" MEAx6^","^LAabs is k23_14=0x19 & k7_7=0x0 & k5_0=0x0 & MEAx6 ; LAabs & LAend & LAval
 	[ lbot=1; lfor=0; ltop=inst_start+2; globalset(LAabs, lbot); globalset(LAabs, lfor); globalset(LAabs, ltop); ]
-	{ local n:3 = MEAx6; local top:3 = inst_next; doLoop(n, LAval, top); if (n != 0) goto inst_next; popLoop(); goto LAend; }
+	{ local n:3 = MEAx6; local top:3 = inst_next / 3; doLoop(n, LAval, top, 0:1); if (n != 0) goto inst_next; popLoop(); goto LAend; }
 instr: "do" Maa6^","^LAabs is k23_14=0x18 & k7_7=0x0 & k5_0=0x0 & Maa6 ; LAabs & LAend & LAval
 	[ lbot=1; lfor=0; ltop=inst_start+2; globalset(LAabs, lbot); globalset(LAabs, lfor); globalset(LAabs, ltop); ]
-	{ local n:3 = Maa6; local top:3 = inst_next; doLoop(n, LAval, top); if (n != 0) goto inst_next; popLoop(); goto LAend; }
+	{ local n:3 = Maa6; local top:3 = inst_next / 3; doLoop(n, LAval, top, 0:1); if (n != 0) goto inst_next; popLoop(); goto LAend; }
 instr: "do" Cnt12^","^LAabs is k23_16=0x6 & k7_4=0x8 & Cnt12 ; LAabs & LAend & LAval
 	[ lbot=1; lfor=0; ltop=inst_start+2; globalset(LAabs, lbot); globalset(LAabs, lfor); globalset(LAabs, ltop); ]
-	{ local n:3 = Cnt12; local top:3 = inst_next; doLoop(n, LAval, top); if (n != 0) goto inst_next; popLoop(); goto LAend; }
+	{ local n:3 = Cnt12; local top:3 = inst_next / 3; doLoop(n, LAval, top, 0:1); if (n != 0) goto inst_next; popLoop(); goto LAend; }
 instr: "do" R6nos^","^LAabs is k23_14=0x1b & k7_0=0x0 & R6nos ; LAabs & LAend & LAval
 	[ lbot=1; lfor=0; ltop=inst_start+2; globalset(LAabs, lbot); globalset(LAabs, lfor); globalset(LAabs, ltop); ]
-	{ local n:3 = R6nos; local top:3 = inst_next; doLoop(n, LAval, top); if (n != 0) goto inst_next; popLoop(); goto LAend; }
+	{ local n:3 = R6nos; local top:3 = inst_next / 3; doLoop(n, LAval, top, 0:1); if (n != 0) goto inst_next; popLoop(); goto LAend; }
 instr: "do" "forever,"^LAabs is k23_0=0x203 ; LAabs & LAval
 	[ lbot=1; lfor=1; ltop=inst_start+2; globalset(LAabs, lbot); globalset(LAabs, lfor); globalset(LAabs, ltop); ]
-	{ local top:3 = inst_next; doLoop(lc, LAval, top); }
+	{ local top:3 = inst_next / 3; doLoop(lc, LAval, top, 1:1); }
 instr: "dor" MEAx6^","^LArend is k23_14=0x19 & k7_7=0x0 & k5_0=0x10 & MEAx6 ; LArel & LArend & LArval
 	[ lbot=1; lfor=0; ltop=inst_start+2; globalset(LArel, lbot); globalset(LArel, lfor); globalset(LArel, ltop); ]
-	{ local n:3 = MEAx6; local top:3 = inst_next; doLoop(n, LArval, top); if (n != 0) goto inst_next; popLoop(); goto LArend; }
+	{ local n:3 = MEAx6; local top:3 = inst_next / 3; doLoop(n, LArval, top, 0:1); if (n != 0) goto inst_next; popLoop(); goto LArend; }
 instr: "dor" Maa6^","^LArend is k23_14=0x18 & k7_7=0x0 & k5_0=0x10 & Maa6 ; LArel & LArend & LArval
 	[ lbot=1; lfor=0; ltop=inst_start+2; globalset(LArel, lbot); globalset(LArel, lfor); globalset(LArel, ltop); ]
-	{ local n:3 = Maa6; local top:3 = inst_next; doLoop(n, LArval, top); if (n != 0) goto inst_next; popLoop(); goto LArend; }
+	{ local n:3 = Maa6; local top:3 = inst_next / 3; doLoop(n, LArval, top, 0:1); if (n != 0) goto inst_next; popLoop(); goto LArend; }
 instr: "dor" Cnt12^","^LArend is k23_16=0x6 & k7_4=0x9 & Cnt12 ; LArel & LArend & LArval
 	[ lbot=1; lfor=0; ltop=inst_start+2; globalset(LArel, lbot); globalset(LArel, lfor); globalset(LArel, ltop); ]
-	{ local n:3 = Cnt12; local top:3 = inst_next; doLoop(n, LArval, top); if (n != 0) goto inst_next; popLoop(); goto LArend; }
+	{ local n:3 = Cnt12; local top:3 = inst_next / 3; doLoop(n, LArval, top, 0:1); if (n != 0) goto inst_next; popLoop(); goto LArend; }
 instr: "dor" R6nos^","^LArend is k23_14=0x1b & k7_0=0x10 & R6nos ; LArel & LArend & LArval
 	[ lbot=1; lfor=0; ltop=inst_start+2; globalset(LArel, lbot); globalset(LArel, lfor); globalset(LArel, ltop); ]
-	{ local n:3 = R6nos; local top:3 = inst_next; doLoop(n, LArval, top); if (n != 0) goto inst_next; popLoop(); goto LArend; }
+	{ local n:3 = R6nos; local top:3 = inst_next / 3; doLoop(n, LArval, top, 0:1); if (n != 0) goto inst_next; popLoop(); goto LArend; }
 instr: "dor" "forever,"^LArend is k23_0=0x202 ; LArel & LArend & LArval
 	[ lbot=1; lfor=1; ltop=inst_start+2; globalset(LArel, lbot); globalset(LArel, lfor); globalset(LArel, ltop); ]
-	{ local top:3 = inst_next; doLoop(lc, LArval, top); }
+	{ local top:3 = inst_next / 3; doLoop(lc, LArval, top, 1:1); }
 
 instr: "enddo" is k23_0=0x8c { popLoop(); }
 instr: "brk"^CC0 is k23_4=0x21 & CC0 {
@@ -1437,6 +1451,8 @@ instr: "rep" R6r8  is k23_14=0x1b & k7_0=0x20 & R6r8  [ rpt=1; globalset(inst_ne
 	lc = lc - 1;
 	goto LoopTop;
 <done>
+	local s:3 = *[SS]:3 ssp;
+	sr = (sr & 0xfe7fff) | (s & 0x018000);
 	lc = *[SS]:3 (ssp - 6);
 	la = *[SS]:3 (ssp - 3);
 	ssp = ssp - 12;
