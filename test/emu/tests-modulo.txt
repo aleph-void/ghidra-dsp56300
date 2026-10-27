@@ -1,0 +1,8 @@
+mod_wrap 2300 2301 r0=104,m0=4,x:104=1 r0=100,x0=000001
+mod_dec 2400 2401 r1=200,m1=4 r1=204
+mod_minus_n 2500 2501 r4=100,m4=9,n4=3 r4=107
+mod_block_jump 2600 2601 r0=102,m0=4,n0=8 r0=10a
+bit_reverse 2700 2703 r2=0,m2=0,n2=4 r2=6
+multi_wrap 2800 2801 r3=105,m3=8007,n3=13 r3=100
+linear_m 2900 2901 r5=10,m5=ffffff r5=11
+XFAIL_mod_wrong 2a00 2a01 r0=104,m0=4 r0=105

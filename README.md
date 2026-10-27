@@ -7,7 +7,7 @@ the Symphony DSP5672x parts, ...).  It adds two languages and one analyzer:
 | | |
 |---|---|
 | `DSP56300:LE:24:default` | address registers update linearly |
-| `DSP56300:LE:24:modulo` | address register updates go through `agu_modulo(Rn, delta, Mn)` |
+| `DSP56300:LE:24:modulo` | address register updates follow Mn (modulo, reverse carry, multiple wrap-around) |
 | **DSP56300 Loop End** analyzer | repairs loops whose last instruction is a two-word instruction |
 
 ## Install
@@ -22,6 +22,11 @@ the Symphony DSP5672x parts, ...).  It adds two languages and one analyzer:
 Zips are built and smoke-tested for Ghidra 12.0.4, 12.1.3 and 12.1.4 (the
 matrix in `.github/workflows/build.yml`).  For another version, build one
 (below).
+
+**Ghidra-Rare fork:** this repository is also maintained as a fork verified by
+the Ghidra-Rare project; prebuilt zips for Ghidra 12.1.3, 12.1.4 and 12.2 are on
+the fork's Releases page.  [GHIDRA-RARE.md](GHIDRA-RARE.md) has the test results,
+the list of changes and the test suite (`test/run-tests.sh`).
 
 ## Build
 
@@ -55,12 +60,15 @@ headless Ghidra; neither touches your own Ghidra settings (see `tools/env.sh`).
   so nested loops restore correctly and the saves fold away.  `REP` repeats the
   following instruction the same way.
 * **Data ALU.** Multiplies are fractional (`(s1*s2)<<1`).  The data limiter
-  (moving an accumulator to a 24/48-bit destination) and rounding are the
-  user ops `sat24`, `sat48` and `rnd56`.  Scaling modes are not modelled.
+  (moving an accumulator to a 24/48-bit destination), rounding (convergent or
+  two's complement per SR.RM), the scaling modes (S1:S0) and the arithmetic
+  saturation mode (SM) are p-code that reads SR; the compiler spec assumes the
+  reset modes at function entry.  The 16-bit modes SA and SC and the
+  double-precision multiply mode DM are not modelled (see GHIDRA-RARE.md).
 * **AGU.** The default language updates address registers linearly.  The
-  `DSP56300:LE:24:modulo` variant routes every update through the user op
-  `agu_modulo(Rn, delta, Mn)` for code that relies on modulo or reverse-carry
-  addressing.
+  `DSP56300:LE:24:modulo` variant computes every update from Mn in p-code
+  (linear, reverse carry, modulo and multiple wrap-around), for code that relies
+  on modulo or reverse-carry addressing.
 
 ## Known limitations
 
@@ -68,8 +76,10 @@ headless Ghidra; neither touches your own Ghidra settings (see `tools/env.sh`).
   is not recognised as a loop bottom by SLEIGH alone (the context lands in the
   middle of that instruction).  The **DSP56300 Loop End** analyzer finds these
   loops, moves the loop-end context to `LA-1` and re-disassembles it.
-* `BRKcc` branches to `LA+1` through a computed target.
-* `DIV`, `NORM`, `NORMF`, `CLB` are user ops.
+* `BRKcc` branches to `LA+1` through a computed target (LA is a run-time
+  register: the enclosing loop is not known when one instruction is decoded).
+* ~~`DIV`, `NORM`, `NORMF`, `CLB` are user ops.~~ Fixed in the Ghidra-Rare fork:
+  they are p-code now, as are the limiter, rounding and the modulo AGU.
 
 ## Regenerating
 

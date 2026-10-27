@@ -1,0 +1,284 @@
+# Emulator cases for test/emu_build.py and EmuCheck.java.  Expected values are worked out by hand
+# from the DSP56300 Family Manual (Rev. 5): section 3 (data ALU, limiting, rounding, saturation),
+# section 4 (AGU modifiers) and the chapter 13 instruction pages.  Accumulators are written as
+# 14 hex digits a2:a1:a0; sr holds the mode bits (S1:S0 = 11:10, LF 15, SM 20, RM 21), the CCR
+# bits are the flag registers C V Z N U E L S.
+
+# ---------------------------------------------------------------- data ALU and flags
+case add_basic
+init a=0,x0=400000,C=1
+expect a=00400000000000,N=0,Z=0,E=0,U=0,V=0,C=0
+	add x0,a
+
+# 0.5 added to 0.99999988: the extension is in use (E), and a read of A over the
+# data bus limits to $7FFFFF and sets L; S from bits 46 != 45
+case limit_move
+init a=007fffff000000,x0=400000,r0=10,L=0,S=0
+expect a=00bfffff000000,x:10=7fffff,L=1,E=1,U=0,S=1,r0=10
+	add x0,a
+	move a,x:(r0)
+
+case sub_borrow
+init a=0,x0=000001,C=0
+expect a=ffffffff000000,C=1,N=1,Z=0,V=0,E=0,U=1
+	sub x0,a
+
+# fractional multiply 0.5 x 0.5 = 0.25; MPY leaves C unchanged
+case mpy_frac
+init x0=400000,y0=400000,a=0,C=1
+expect a=00200000000000,C=1,N=0,Z=0,V=0,E=0,U=1
+	mpy y0,x0,a
+
+# -1.0 x -1.0 = +1.0 needs the extension; the bus read limits it
+case mpy_minus_one
+init x1=800000,y1=800000,a=0,r1=20,L=0
+expect a=00800000000000,E=1,U=0,N=0,y:20=7fffff,L=1
+	mpy y1,x1,a
+	move a,y:(r1)
+
+case mpyuu
+init x0=800000,a=0,C=1
+expect a=00800000000000,C=1
+	mpyuu x0,x0,a
+
+# convergent rounding (Figure 3-4): exactly one half rounds to even
+case rnd_convergent
+init a=00123456800000,b=00123457800000,sr=0
+expect a=00123456000000,b=00123458000000
+	rnd a
+	rnd b
+
+# two's complement rounding (RM = 1, Figure 3-5): one half rounds up
+case rnd_twos
+init a=00123456800000,sr=200000
+expect a=00123457000000
+	rnd a
+
+# scale down (S0): rounding at bit 24; $123457:000000 is one half of the scaled LSB, odd -> up
+case rnd_scale_down
+init a=00123457000000,sr=400
+expect a=00123458000000
+	rnd a
+
+# scale up (S1): the bus gets bits 46..23, no limiting; S from bits 45 != 44
+case limit_scale_up
+init a=00200000800000,r2=30,sr=800,L=0,S=0
+expect x:30=400001,L=0,S=1
+	move a,x:(r2)
+
+# arithmetic saturation mode (SM): the result $00:800000:000000 is saturated to 48 bits
+case sm_saturate
+init a=007fffff000000,x0=000001,sr=100000,V=0,L=0,C=0
+expect a=007fffffffffff,V=1,L=1,E=0,U=0,N=0,Z=0,C=0
+	add x0,a
+
+# 24 DIV iterations: 0.125 / 0.5 = 0.25 in A0, partial remainder in A2:A1
+case div_24
+init a=00100000000000,x0=400000,lc=3
+expect a=ffc00000200000,C=0,lc=3
+	andi #$fe,ccr
+	rep #24
+	div x0,a
+
+# NORM after TST: two left shifts to bring the leading one to bit 46, then a no-op
+case norm_iterations
+init a=00100000000000,r0=10
+expect a=00400000000000,r0=e,U=0,E=0,Z=0,N=0,V=0
+	tst a
+	norm r0,a
+	norm r0,a
+	norm r0,a
+
+# CLB/NORMF example of the CLB and NORMF pages
+case clb_normf
+init a=20000000000000,b=0
+expect b=00000007000000,a=00400000000000,E=0,U=0,N=0,Z=0,V=0
+	clb a,b
+	normf b1,a
+
+# NR = Z + (!U . !E): A is normalized, so TNR transfers and TNN does not
+case cc_nr_nn
+init a=00400000000000,x0=123456,y0=654321,b=0
+expect b=00123456000000
+	tst a
+	tnr x0,b
+	tnn y0,b
+
+# IFcc: the conditional ALU operation leaves the CCR alone
+case if_cc
+init a=0,b=0,x0=100000,Z=1,N=1
+expect a=00100000000000,b=0,Z=1,N=1
+	add x0,a ifeq
+	add x0,b ifne
+
+case logic_ops
+init a=00f0f0f0123456,x0=0ff00f,C=1
+expect a=000f000f123456,C=0,N=0,Z=0,V=0
+	and x0,a
+	lsl a
+	ror a
+	eor x0,a
+
+case asl_imm
+init a=00012345000000,C=1
+expect b=00123450000000,C=0,V=0
+	asl #4,a,b
+
+case cmpu
+init a=ff000000000001,b=00000000000002
+expect C=1,Z=0,N=1,V=0,a=ff000000000001
+	cmpu b,a
+
+case extractu
+init a=00000000000ff0,b=0
+expect b=000000000000ff
+	extractu #$008004,a,b
+
+# ---------------------------------------------------------------- moves and addressing
+# all sources of a parallel move are read before the ALU result is written
+case parallel_read_order
+init x0=400000,y0=400000,a=0,r0=10,x:10=200000
+expect a=00200000000000,x0=200000,r0=11
+	mac y0,x0,a x:(r0)+,x0
+
+case xy_move
+init r0=10,n0=3,r4=20,x:10=111111,y:20=222222
+expect x1=111111,y1=222222,r0=13,r4=1f
+	move x:(r0)+n0,x1 y:(r4)-,y1
+
+case ea_modes
+init r1=10,x:f=800000,r2=10,n2=5,y:15=123456,r3=20,n3=4,x:20=000042
+expect a=ff800000000000,r1=f,b=00123456000000,r2=10,x0=000042,r3=1c
+	move x:-(r1),a
+	move y:(r2+n2),b
+	move x:(r3)-n3,x0
+
+case abs_and_immediate
+init x:1234=0abcde,y:12=0fedcb,a=0
+expect y1=0abcde,x1=0fedcb,r5=123456,a1=000012,x0=400000
+	move x:$1234,y1
+	move y:<$12,x1
+	move #>$123456,r5
+	move #$12,a1
+	move #$40,x0
+
+case displacement
+init r0=10,x:15=777777,r1=2000,y:1000=555555
+expect x1=777777,b0=555555,r0=10,r1=2000
+	move x:(r0+5),x1
+	move y:(r1-$1000),b0
+
+case long_moves
+init a=00123456789abc,r0=40,r1=50,x:50=0aaaaa,y:50=0bbbbb
+expect x:40=123456,y:40=789abc,b=000aaaaa0bbbbb
+	move a,l:(r0)
+	move l:(r1),b
+
+case lua
+init r0=100,n0=10
+expect r1=110,r0=100
+	lua (r0)+n0,r1
+
+# the default language updates address registers linearly whatever Mn holds
+case linear_ignores_m
+init r0=104,m0=4
+expect r0=105
+	move x:(r0)+,x0
+
+# ---------------------------------------------------------------- bits, flow, loops
+case bit_ops
+init x:10=000000,r0=10
+expect x:10=000020,C=1
+	bset #5,x:(r0)
+	bchg #0,x:(r0)
+	btst #5,x:(r0)
+	bclr #0,x:(r0)
+
+case jclr_jset
+init x:10=000008,r0=10,x0=0,x1=0
+expect x1=110000,x0=0
+	jclr #3,x:(r0),@no
+	move #$11,x1
+@no:
+	jclr #2,x:(r0),@no2
+	move #$22,x0
+@no2:
+
+case bsr_rts
+init x0=0,x1=0,ssp=0
+expect x0=110000,x1=220000,ssp=0
+	bsr @sub
+	move #$22,x1
+	bra @done
+@sub:
+	move #$11,x0
+	rts
+@done:
+
+# DO #5: five passes; LC, LA and LF come back from the stack at the end
+case do_loop
+init a=0,x0=010000,lc=7,la=99,ssp=0,sr=0
+expect a=00050000000000,lc=7,la=99,ssp=0,sr=0
+	do #5,@end
+	add x0,a
+@end:
+
+case rep_asl
+init a=00010000000000,lc=3
+expect a=00100000000000,lc=3
+	rep #4
+	asl a
+
+# a deliberately wrong expectation: must be reported as failing
+case XFAIL_add_wrong
+init a=0,x0=400000
+expect a=00400000000001
+	add x0,a
+
+# ---------------------------------------------------------------- modulo variant (AGU modifiers)
+# modulo 5 (M0 = 4): the buffer is $100..$104
+case mod_wrap modulo
+init r0=104,m0=4,x:104=1
+expect r0=100,x0=000001
+	move x:(r0)+,x0
+
+case mod_dec modulo
+init r1=200,m1=4
+expect r1=204
+	move x:(r1)-,x1
+
+# modulo 10 (M4 = 9), base $100: $100 - 3 wraps to $107
+case mod_minus_n modulo
+init r4=100,m4=9,n4=3
+expect r4=107
+	move y:(r4)-n4,y0
+
+# Nn = 8 = 2^k (k = 3 for modulus 5): jumps to the same place in the next block
+case mod_block_jump modulo
+init r0=102,m0=4,n0=8
+expect r0=10a
+	move x:(r0)+n0,x0
+
+# reverse carry (M2 = 0), Nn = 4: 0 -> 4 -> 2 -> 6 (8-point FFT order)
+case bit_reverse modulo
+init r2=0,m2=0,n2=4
+expect r2=6
+	move x:(r2)+n2,a
+	move x:(r2)+n2,a
+	move x:(r2)+n2,a
+
+# multiple wrap-around modulo 8 (M3 = $8007): $105 + 19 = $118 -> $100
+case multi_wrap modulo
+init r3=105,m3=8007,n3=13
+expect r3=100
+	move x:(r3)+n3,b
+
+case linear_m modulo
+init r5=10,m5=ffffff
+expect r5=11
+	move x:(r5)+,a
+
+case XFAIL_mod_wrong modulo
+init r0=104,m0=4
+expect r0=105
+	move x:(r0)+,x0

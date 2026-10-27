@@ -1,24 +1,28 @@
-// Ghidra extension build.
-//
-//   tools/build.sh                                     # the usual way
-//   GHIDRA_INSTALL_DIR=/path/to/ghidra gradle buildExtension
-//
-// buildExtension does not compile SLEIGH, and a zip without the .sla files
-// installs cleanly and then fails at import with "Unsupported language".
-// tools/build.sh compiles the .slaspec files first and checks the zip.
-def ghidraInstallDir = System.env.GHIDRA_INSTALL_DIR ?:
-	(project.hasProperty("GHIDRA_INSTALL_DIR") ? project.getProperty("GHIDRA_INSTALL_DIR") : null)
-if (!ghidraInstallDir) {
-	throw new GradleException("Set GHIDRA_INSTALL_DIR (env or -P) to a Ghidra installation")
+// Builds an installable Ghidra extension:
+//   GHIDRA_INSTALL_DIR=/path/to/ghidra_12.1.4_PUBLIC gradle buildExtension
+// (compile the .slaspec files first, e.g. with tools/build.sh or Ghidra-Rare's
+// tools/build-module.sh: buildExtension does not compile SLEIGH)
+def ghidraInstallDir
+if (System.env.GHIDRA_INSTALL_DIR) {
+	ghidraInstallDir = System.env.GHIDRA_INSTALL_DIR
+}
+else if (project.hasProperty("GHIDRA_INSTALL_DIR")) {
+	ghidraInstallDir = project.getProperty("GHIDRA_INSTALL_DIR")
+}
+if (ghidraInstallDir) {
+	apply from: new File(ghidraInstallDir).getCanonicalPath() + "/support/buildExtension.gradle"
+}
+else {
+	throw new GradleException("GHIDRA_INSTALL_DIR is not defined!")
 }
 
-apply from: new File(ghidraInstallDir).getCanonicalPath() + "/support/buildExtension.gradle"
+// The module has no third-party dependencies. buildExtension.gradle's copyDependencies would
+// otherwise copy every jar it finds under Ghidra/Processors into lib/, including other
+// modules' jars when those are symlinked in from outside the Ghidra install.
+copyDependencies.enabled = false
 
-// Development material that has no use inside Ghidra.
-tasks.named("buildExtension") {
-	exclude ".github/**"
-	exclude "scratch/**"
-	exclude "tests/**"
-	exclude "tools/**"
-	exclude "data/languages/*.sinc.in"
+// Release zips carry only what Ghidra loads; generators, templates and test suites stay in the
+// repository.
+buildExtension {
+	exclude '.github/**', 'scratch/**', 'test/**', 'tests/**', 'tools/**', 'data/languages/*.sinc.in'
 }
